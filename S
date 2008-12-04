@@ -1,0 +1,16 @@
+(m*(4*m*gsl_pow(ut,2) - 2*r*gsl_pow(ut,2) - gsl_pow(r,3)*(gsl_pow(up,2) + gsl_pow(uth,2))))/gsl_pow(r,4)
+(m*ur*uth)/r
+(m*up*ur)/r
+(2*m*(-2*m + r)*ur*ut)/gsl_pow(r,4)
+-((m*ur*uth)/((2*m - r)*gsl_pow(r,2)))
+(m*gsl_pow(r,2)*(2*(2*m - r)*r*gsl_pow(up,2) + gsl_pow(ur,2)) - m*gsl_pow(-2*m + r,2)*gsl_pow(ut,2))/((2*m - r)*gsl_pow(r,4))
+(-2*m*up*uth)/r
+(m*(2*m - r)*ut*uth)/gsl_pow(r,4)
+-((m*up*ur)/((2*m - r)*gsl_pow(r,2)))
+(-2*m*up*uth)/r
+(m*(-4*gsl_pow(m,2)*gsl_pow(ut,2) + r*(4*m*gsl_pow(ut,2) + r*(gsl_pow(ur,2) - gsl_pow(ut,2) - 2*r*(-2*m + r)*gsl_pow(uth,2)))))/((2*m - r)*gsl_pow(r,4))
+(m*(2*m - r)*up*ut)/gsl_pow(r,4)
+(2*m*ur*ut)/((2*m - r)*gsl_pow(r,2))
+(m*ut*uth)/r
+(m*up*ut)/r
+(m*(-2*gsl_pow(ur,2) + r*(-2*m + r)*(gsl_pow(up,2) + gsl_pow(uth,2))))/ ((2*m - r)*gsl_pow(r,2))
