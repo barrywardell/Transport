@@ -6,8 +6,9 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
 
-#define NUM_EQS	21
+#define NUM_EQS	22
 #define EPS	10e-12
+
 /* Parameters of the motion */
 struct geodesic_params {
   double m; /* Black Hole Mass */
@@ -125,8 +126,25 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   gsl_matrix_set_zero(f);
   gsl_matrix_add(f,q_gu);
   gsl_matrix_sub(f,gu_q);
-  gsl_matrix_add(f, q2);
-  gsl_matrix_add(f,tau_S);
+  gsl_matrix_sub(f, q2);
+  gsl_matrix_sub(f,tau_S);
+  
+  return GSL_SUCCESS;
+}
+
+int sqrtDeltaRHS (double tau, const gsl_matrix * q, const double * sqrt_delta, double * f, void * params)
+{
+  int i;
+  double rhs = 0;
+  
+  for(i=0; i<4; i++)
+  {
+    rhs -= gsl_matrix_get(q, i, i);
+  }
+  
+  rhs = rhs * (*sqrt_delta) / 2 / (tau + EPS);
+  
+  *f = rhs;
   
   return GSL_SUCCESS;
 }
@@ -143,6 +161,9 @@ int func (double tau, const double y[], double f[], void *params)
   gsl_matrix_view q_eqs = gsl_matrix_view_array(f+5,4,4);
   gsl_matrix_const_view q_vals = gsl_matrix_const_view_array(y+5,4,4);
   qRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &q_eqs.matrix, params);
+  
+  /* Equation for Delta^1/2 */
+  sqrtDeltaRHS(tau, &q_vals.matrix, &y[21], &f[21], params);
     
   return GSL_SUCCESS;
 }
@@ -189,7 +210,8 @@ int main (void)
   double tau = 0.0, tau1 = 1000.0;
   double h = 1e-6;
   double y[NUM_EQS] = { 10.0, 0.0, 0.0, 0.0, 0.0, /* r, r', theta, phi, t */
-		  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; /* Q^a_b */
+		  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* Q^a_b */
+		  1.0 }; /* Delta^1/2 */
 
   while (tau < tau1)
   {
@@ -198,24 +220,24 @@ int main (void)
     if (status != GSL_SUCCESS)
       break;
     
+    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", tau, y[0], y[1], y[2], y[3], y[4]);
+    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", y[5], y[6], y[7], y[8], y[9], y[10]);
+    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", y[11], y[12], y[13], y[14], y[15], y[16]);
+    printf ("%.5f, %.5f, %.5f, %.5f, %.5f\n", y[17], y[18], y[19], y[20], y[21]);
+    
     /* Don't let the step size get bigger than 1 */
-    if (h > 1.0)
+    /*if (h > .10)
     {
-      //fprintf(stderr,"Warning: step size %e greater than 1 is not allowed.\n",h);
-      h=1.0;
-    }
+      fprintf(stderr,"Warning: step size %e greater than 1 is not allowed. Using step size of 1.0.\n",h);
+      h=.10;
+    }*/
       
-    /* Don't let the step size get smaller than 10^-6 */
+    /* Exit if step size get smaller than 10^-12 */
     if (h < 1e-12)
     {
-      fprintf(stderr,"Warning: step size %e less than 1e-12 is not allowed.\n",h);
-      h=1e-12;
+      fprintf(stderr,"Error: step size %e less than 1e-12 is not allowed.\n",h);
+      break;
     }
-    
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", tau, y[0], y[1], y[2], y[3], y[4]);
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f", y[5], y[6], y[7], y[8], y[9], y[10]);
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f", y[11], y[12], y[13], y[14], y[15], y[16]);
-    printf ("%.5f, %.5f, %.5f, %.5f\n", y[17], y[18], y[19], y[20]);
   }
 
   gsl_odeiv_evolve_free (e);
