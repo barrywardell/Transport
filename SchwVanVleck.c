@@ -129,6 +129,10 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   gsl_matrix_sub(f, q2);
   gsl_matrix_sub(f,tau_S);
   
+  /* The theta,theta component blows up as theta*cot(theta) and makes the numerical scheme break down.
+     Since we know the analytic form, don't compute it numerically */
+  gsl_matrix_set(f,1,1,0.0);
+  
   return GSL_SUCCESS;
 }
 
