@@ -7,7 +7,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#define NUM_EQS	(5+16+1+16+16+64)
+#define NUM_EQS	(5+16+1+16+16+64+64+64)
 #define EPS	10e-12
 
 /* Parameters of the motion */
@@ -303,7 +303,7 @@ int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
   /* Store this in f2 too since it's the wrong order */
   for(i=0; i<4; i++)
   {
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, dI2[i], gu, 1.0, f2[i]);
+    gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, dI2[i], gu, 1.0, f2[i]);
   }
   
   /* Now, fix the ordering of f2 and add it into f */
@@ -319,6 +319,161 @@ int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
     }
   }
   
+  return GSL_SUCCESS;
+}
+
+/* RHS of transport equation for dxi. The matrix elements are the first two indices. */
+int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], gsl_matrix * f[], void * params)
+{
+  int i, j, k;
+  
+  /* First, we need xi from q */
+  gsl_matrix * xi = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(xi, q);
+  for( i=0; i<4; i++)
+  {
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+  }
+  
+  /* Let's also create an array of matrices for dxi where the matrix elements are the first and third indices */
+  gsl_matrix * dxi2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	gsl_matrix_set(dxi2[k], i, j, gsl_matrix_get(dxi[j], i, k));
+      }
+    }
+  }
+  
+  /* The first term on the RHS is just dxi/tau */
+  for(i=0; i<4; i++)
+  {
+    gsl_matrix_memcpy(f[i],dxi[i]);
+    gsl_matrix_scale(f[i],1/(tau+EPS));
+  }
+  
+  /* Now we can easily work out the three xi*dxi terms, one of which is in the wrong order so is stored in f2 for now */
+  gsl_matrix * f2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), xi, dxi[i], 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), dxi[i], xi, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), dxi2[i], xi, 1.0, f[i]);
+  }
+  
+  /* And calculate sigma_R */
+  gsl_matrix * sigma_R[4];
+  for (i=0; i<4; i++)
+  {
+    sigma_R[i] = gsl_matrix_alloc(4,4);
+  }
+  R_sigma(y, yp, sigma_R, params);
+
+  /* We need sigma_R also with the matrix elements the first and third free indices of the tensor */
+  gsl_matrix * sigma_R2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	gsl_matrix_set(sigma_R2[k], i, j, gsl_matrix_get(sigma_R[j], i, k));
+      }
+    }
+  }
+  
+  /* Now, calculate the three sigma_R * xi terms 
+     FIXME: Missing the Riemann derivative term */
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans,-1.0, xi, sigma_R[i], 0.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, sigma_R[i], xi, 0.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, sigma_R2[i], xi, 0.0, f[i]);
+  }
+
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
+  
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, gu, dxi[i], 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans,-1.0, dxi[i], gu, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans,-1.0, dxi2[i], gu, 1.0, f[i]);
+  }
+
+  return GSL_SUCCESS;
+}
+
+/* RHS of transport equation for deta. The matrix elements are the first two indices. */
+int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], const gsl_matrix * eta, const gsl_matrix * deta[], gsl_matrix * f[], void * params)
+{
+  int i, j, k;
+  
+  /* First, we need xi from q */
+  gsl_matrix * xi = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(xi, q);
+  for( i=0; i<4; i++)
+  {
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+  }
+  
+  /* Let's also create an array of matrices for deta where the matrix elements are the first and third indices */
+  gsl_matrix * deta2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	gsl_matrix_set(deta2[k], i, j, gsl_matrix_get(deta[j], i, k));
+      }
+    }
+  }
+  
+  /* The first term on the RHS is just deta/tau */
+  for(i=0; i<4; i++)
+  {
+    gsl_matrix_memcpy(f[i],deta[i]);
+    gsl_matrix_scale(f[i],1/(tau+EPS));
+  }
+  
+  /* Now we can easily work out the two eta*deta terms, and one eta*dxi term */
+  gsl_matrix * f2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), deta[i], xi, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), deta2[i], xi, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), xi, dxi[i], 1.0, f[i]);
+  }
+  
+  /* And calculate sigma_R */
+  gsl_matrix * sigma_R[4];
+  for (i=0; i<4; i++)
+  {
+    sigma_R[i] = gsl_matrix_alloc(4,4);
+  }
+  R_sigma(y, yp, sigma_R, params);
+
+  /* Now, calculate the sigma_R * eta terms */
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans,-1.0, eta, sigma_R[i], 1.0, f[i]);;
+  }
+
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
+  
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, deta[i], gu, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, deta2[i], gu, 1.0, f[i]);
+  }
+
   return GSL_SUCCESS;
 }
 
@@ -370,6 +525,46 @@ int func (double tau, const double y[], double f[], void *params)
   
   dIRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
   
+  /* Equation for dxi */
+  gsl_matrix_view dxi_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+64+0,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+16,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+32,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+48,4,4)};
+  gsl_matrix_const_view dxi_vals_views[4] = {gsl_matrix_const_view_array(y+5+16+1+16+16+64+0,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+16,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+32,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+48,4,4)};
+  gsl_matrix * dxi_eqs[4];
+  const gsl_matrix * dxi_vals[4];
+  
+  for (i=0; i<4; i++)
+  {
+    dxi_eqs[i] = &dxi_eqs_views[i].matrix;
+    dxi_vals[i] = &dxi_vals_views[i].matrix;
+  }
+  
+  dxiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, dxi_eqs, params);
+
+  /* Equation for deta */
+  gsl_matrix_view deta_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+64+64+0,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+64+16,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+64+32,4,4),
+			       gsl_matrix_view_array(f+5+16+1+16+16+64+64+48,4,4)};
+  gsl_matrix_const_view deta_vals_views[4] = {gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+0,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+16,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+32,4,4),
+				      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+48,4,4)};
+  gsl_matrix * deta_eqs[4];
+  const gsl_matrix * deta_vals[4];
+  
+  for (i=0; i<4; i++)
+  {
+    deta_eqs[i] = &deta_eqs_views[i].matrix;
+    deta_vals[i] = &deta_vals_views[i].matrix;
+  }
+  
+  detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
+
   return GSL_SUCCESS;
 }
 
@@ -401,6 +596,8 @@ int jac (double tau, const double y[], double *dfdy, double dfdtau[], void *para
 
 int main (void)
 {
+  int i;
+  
   /* Use a Runge-Kutta integrator with adaptive step-size */
   const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
   gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
@@ -424,7 +621,15 @@ int main (void)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* dI */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* dI */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* dI */
-		  }; 
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a'_{ b' c'}, i.e. dxi */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a'_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a'_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a'_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'}, i.e. deta */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
+    }; 
 
   while (tau < tau1)
   {
@@ -444,27 +649,16 @@ int main (void)
     gsl_linalg_LU_invert (lu, p, gamma);
     
     /* Output the results */
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", tau, y[0], y[1], y[2], y[3], y[4]);
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", y[5], y[6], y[7], y[8], y[9], y[10]);
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, ", y[11], y[12], y[13], y[14], y[15], y[16]);
-    printf ("%.5f, %.5f, %.5f, %.5f, %.5f, ", y[17], y[18], y[19], y[20], y[21]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[22], y[23], y[24], y[25]); /* I^a_b' */
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[26], y[27], y[28], y[29]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[30], y[31], y[32], y[33]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[34], y[35], y[36], y[37]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[38], y[39], y[40], y[41]); /* eta^a_b' */
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[42], y[43], y[44], y[45]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[46], y[47], y[48], y[49]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[50], y[51], y[52], y[53]);
+    printf ("%.5f", tau);
+    for(i=0; i<NUM_EQS; i++)
+    {
+      printf (", %.5f", y[i]);
+    }
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3)); 
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[54], y[55], y[56], y[57]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[58], y[39], y[60], y[61]); /* eta^a_b' */
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[62], y[63], y[64], y[65]);
-    printf ("%.5f, %.5f, %.5f, %.5f, ", y[66], y[67], y[68], y[69]);
-    printf ("%.5f, %.5f, %.5f, %.5f\n", y[70], y[71], y[72], y[73]);
+    printf("\n");
     
     /* Don't let the step size get bigger than 1 */
     /*if (h > .10)
