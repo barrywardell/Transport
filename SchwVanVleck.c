@@ -239,7 +239,7 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
 
 int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, const gsl_matrix *q, const gsl_matrix * dI[], gsl_matrix * f[], void * params)
 {
-  int i;
+  int i, j, k;
   
   /* First, we need I^-1 */
   int signum;
@@ -264,7 +264,8 @@ int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, sigma_R[i], I_inv, 0.0, f[i]);
   }
   
-  /* And calculate dI * xi */
+  /* And calculate dI * xi and store it in f2 for now since the elements will be in the wrong order */
+  gsl_matrix * f2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
   gsl_matrix * xi = gsl_matrix_calloc(4,4);
   gsl_matrix_memcpy(xi, q);
   
@@ -278,15 +279,44 @@ int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
 			    gsl_matrix_view_array_with_tda (&dI[0]->data[4], 4, 4, 16),
 			    gsl_matrix_view_array_with_tda (&dI[0]->data[8], 4, 4, 16),
 			    gsl_matrix_view_array_with_tda (&dI[0]->data[12], 4, 4, 16)};
-  gsl_matrix dI2[4];
+  gsl_matrix * dI2[4];
   for(i=0; i<4; i++)
   {
-    dI2[i] = dI2_view[i].matrix;
+    dI2[i] = &dI2_view[i].matrix;
   }
+  
+  /* When multiplying, we need to use the transpose of dI2 since the order of the indices is wrong */
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasTrans, CblasNoTrans, -1.0/(tau+EPS), dI2[i], xi, 1.0, f2[i]);
+  }
+  
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
   
   for(i=0; i<4; i++)
   {
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), &dI2[i], xi, 1.0, f[i]);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, gu, dI[i], 1.0, f[i]);
+  }
+  
+  /* Store this in f2 too since it's the wrong order */
+  for(i=0; i<4; i++)
+  {
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, dI2[i], gu, 1.0, f2[i]);
+  }
+  
+  /* Now, fix the ordering of f2 and add it into f */
+  gsl_matrix * f2_reordered[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	gsl_matrix_set(f2_reordered[i], j, k, gsl_matrix_get(f2[j], k, i));
+      }
+    }
   }
   
   return GSL_SUCCESS;
