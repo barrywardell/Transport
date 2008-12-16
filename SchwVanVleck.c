@@ -1,5 +1,6 @@
 /* Numerically integrate the geodesic equations in Schwarzschild */
 #include <stdio.h>
+#include <string.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
@@ -7,7 +8,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#define NUM_EQS	(5+16+1+16+16+64+64+64)
+#define NUM_EQS	(5+16+1+16+16+64+64+64+256)
 #define EPS	10e-12
 
 /* Parameters of the motion */
@@ -175,7 +176,7 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   
   /* The theta,theta component blows up as theta*cot(theta) and makes the numerical scheme break down.
      Since we know the analytic form, don't compute it numerically */
-  gsl_matrix_set(f,1,1,0.0);
+  //gsl_matrix_set(f,1,1,0.0);
   
   return GSL_SUCCESS;
 }
@@ -477,6 +478,53 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   return GSL_SUCCESS;
 }
 
+int d2I_Inv (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], const gsl_matrix * I, const gsl_matrix * dI[], const double * d2I_Inv, double * f, void * params)
+{
+  int i, j, k, l, m;
+  
+  /* Initialize the RHS to 0 */
+  memset(f, 0, 256*sizeof(double));
+  
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
+  
+  /* xi */
+  gsl_matrix * xi = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(xi, q);
+  
+  for( i=0; i<4; i++)
+  {
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+  }
+  
+  /* And calculate sigma_R */
+  gsl_matrix * sigma_R[4];
+  for (i=0; i<4; i++)
+  {
+    sigma_R[i] = gsl_matrix_alloc(4,4);
+  }
+  R_sigma(y, yp, sigma_R, params);
+  
+  /* FIXME: Riemann derivative term missing */
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	for(l=0; l<4; l++)
+	  for(m=0; m<4; m++)
+	    f[64*i+16*j+4*k+l] += d2I_Inv[64*i+16*j+4*m+l] * gu->data[4*m+k] 		/* gu * d2I */
+				+ d2I_Inv[64*i+16*j+4*k+m] * gu->data[4*m+l]
+				- d2I_Inv[64*m+16*j+4*k+l] * gu->data[4*i+m]
+				- (d2I_Inv[64*i+16*j+4*m+l] * xi->data[4*m+k]		 /* xi * d2I */
+				+  d2I_Inv[64*i+16*j+4*m+k] * xi->data[4*m+l]
+				+ dxi[l]->data[4*m+k]* dI[m]->data[4*i+j])/(tau+EPS)	/* dxi * dI */
+				+ sigma_R[l]->data[4*i+m]*dI[k]->data[4*m+j]		/* R_sigma * dI */
+				+ sigma_R[k]->data[4*i+m]*dI[l]->data[4*m+j]
+				- sigma_R[l]->data[4*m+k]*dI[m]->data[4*i+j];
+
+  return GSL_SUCCESS;
+}
+
 /* RHS of our system of ODEs */
 int func (double tau, const double y[], double f[], void *params)
 {
@@ -565,6 +613,8 @@ int func (double tau, const double y[], double f[], void *params)
   
   detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
 
+  d2I_Inv(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64, f+5+16+1+16+16+64+64+64, params);
+  
   return GSL_SUCCESS;
 }
 
@@ -629,6 +679,22 @@ int main (void)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* sigma^a_{ b' c'} */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /* d2I */
     }; 
 
   while (tau < tau1)
@@ -657,7 +723,7 @@ int main (void)
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3)); 
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
     printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-    printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+    printf ("%.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
     printf("\n");
     
     /* Don't let the step size get bigger than 1 */
@@ -668,9 +734,9 @@ int main (void)
     }*/
       
     /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-12)
+    if (h < 1e-8)
     {
-      fprintf(stderr,"Error: step size %e less than 1e-12 is not allowed.\n",h);
+      fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
       break;
     }
   }

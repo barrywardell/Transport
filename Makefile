@@ -1,5 +1,5 @@
 CFLAGS=-Wall
-LDFLAGS=-lgsl -ltensor -lcblas -latlas -lm -L/usr/local/atlas/lib
+LDFLAGS=-L/usr/local/atlas/lib -lgsl -lcblas -latlas -lm
 OUTPUT=VanVleck
 CC = gcc
 
