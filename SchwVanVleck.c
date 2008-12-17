@@ -8,7 +8,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-#define NUM_EQS	(5+16+1+16+16+64+64+64+256)
+#define NUM_EQS	(5+16+1+16+16+64+64+64+256+256+1)
 #define EPS	10e-12
 
 /* Parameters of the motion */
@@ -18,6 +18,23 @@ struct geodesic_params {
   double l; /* "Angular momentum" constant of motion */
   int type; /* Type of geodesic. 0=null, -1=time-like */
 };
+
+/* The contravariant metric components for Schwarzschild (with theta=Pi/2) */
+int metric_up_up(const double *y, gsl_matrix *metric, void *params)
+{
+  gsl_matrix_set_zero(metric);
+  
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double r = y[0];
+  
+  gsl_matrix_set(metric,0,0,(r-2*m)/r);
+  gsl_matrix_set(metric,1,1,1/gsl_pow_2(r));
+  gsl_matrix_set(metric,2,2,1/gsl_pow_2(r));
+  gsl_matrix_set(metric,3,3,-r/(r-2*m));
+  
+  return GSL_SUCCESS;
+}
 
 /* Calculates the matrix S^a_b = R^a_{ c b d} u^c u^d and fill the values into s.  Note that we have already
    set theat=Pi/2 */
@@ -357,7 +374,6 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   }
   
   /* Now we can easily work out the three xi*dxi terms, one of which is in the wrong order so is stored in f2 for now */
-  gsl_matrix * f2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
   for(i=0; i<4; i++)
   {
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), xi, dxi[i], 1.0, f[i]);
@@ -443,7 +459,6 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   }
   
   /* Now we can easily work out the two eta*deta terms, and one eta*dxi term */
-  gsl_matrix * f2[4] = {gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4), gsl_matrix_calloc(4,4)};
   for(i=0; i<4; i++)
   {
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), deta[i], xi, 1.0, f[i]);
@@ -522,6 +537,231 @@ int d2I_Inv (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
 				+ sigma_R[k]->data[4*i+m]*dI[l]->data[4*m+j]
 				- sigma_R[l]->data[4*m+k]*dI[m]->data[4*i+j];
 
+  return GSL_SUCCESS;
+}
+
+int d2xi (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], const gsl_matrix * I, const gsl_matrix * dI[], const double * d2xi, double * f, void * params)
+{
+  int i, j, k, l, m;
+  
+  /* Initialize the RHS to 0 */
+  memset(f, 0, 256*sizeof(double));
+  
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
+  
+  /* xi */
+  gsl_matrix * xi = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(xi, q);
+  
+  for( i=0; i<4; i++)
+  {
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+  }
+  
+  /* And calculate sigma_R */
+  gsl_matrix * sigma_R[4];
+  for (i=0; i<4; i++)
+  {
+    sigma_R[i] = gsl_matrix_alloc(4,4);
+  }
+  R_sigma(y, yp, sigma_R, params);
+  
+  /* FIXME: Riemann derivative term missing */
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	for(l=0; l<4; l++)
+	  for(m=0; m<4; m++)
+	    f[64*i+16*j+4*k+l] +=  d2xi[64*i+16*j+4*m+l] * gu->data[4*m+k] 		/* gu * d2I */
+				+ d2xi[64*i+16*j+4*k+m] * gu->data[4*m+l]
+				+ d2xi[64*i+16*m+4*k+l] * gu->data[4*m+j]
+				- d2xi[64*m+16*j+4*k+l] * gu->data[4*i+m]
+				+ (d2xi[64*m+16*j+4*k+l]
+				- dxi[k]->data[4*i+m] * dxi[l]->data[4*m+j]
+				- dxi[j]->data[4*i+m] * dxi[l]->data[4*m+k]
+				- dxi[l]->data[4*i+m] * dxi[k]->data[4*m+j]
+				- d2xi[64*m+16*j+4*k+l] * xi->data[4*i+m]
+				- d2xi[64*i+16*m+4*k+l] * xi->data[4*m+j]
+				- d2xi[64*i+16*m+4*j+l] * xi->data[4*m+k]
+				- d2xi[64*i+16*m+4*j+k] * xi->data[4*m+l])/(tau+EPS);		/* dxi * dxi */
+
+
+  return GSL_SUCCESS;
+}
+
+/* d2eta */
+int d2eta (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *eta, const gsl_matrix *q, const gsl_matrix * dxi[], const double * d2xi, const gsl_matrix * deta[], const double * d2eta, double * f, void * params)
+{
+  int i, j, k, l, m;
+  
+  /* Initialize the RHS to 0 */
+  memset(f, 0, 256*sizeof(double));
+  
+  /* Christoffel terms */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
+  Gu(y, yp, gu, params);
+  
+  /* xi */
+  gsl_matrix * xi = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(xi, q);
+  
+  for( i=0; i<4; i++)
+  {
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+  }
+  
+  /* And calculate sigma_R */
+  gsl_matrix * sigma_R[4];
+  for (i=0; i<4; i++)
+  {
+    sigma_R[i] = gsl_matrix_alloc(4,4);
+  }
+  R_sigma(y, yp, sigma_R, params);
+  
+  /* FIXME: Riemann derivative term missing */
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	for(l=0; l<4; l++)
+	  for(m=0; m<4; m++)
+	    f[64*i+16*j+4*k+l] +=  d2eta[64*i+16*j+4*m+l] * gu->data[4*m+k] 		/* gu * d2I */
+				+ d2eta[64*i+16*j+4*k+m] * gu->data[4*m+l]
+				+ d2eta[64*i+16*m+4*k+l] * gu->data[4*m+j]
+				+ (d2eta[64*m+16*j+4*k+l]
+				- dxi[k]->data[4*m+j] * deta[l]->data[4*i+m]
+				- dxi[l]->data[4*m+j] * deta[k]->data[4*i+m]
+				- dxi[l]->data[4*m+k] * deta[j]->data[4*i+m]
+				- d2xi[64*m+16*j+4*k+l] * eta->data[4*i+m]
+				- d2eta[64*i+16*m+4*k+l] * xi->data[4*m+j]
+				- d2eta[64*i+16*m+4*j+l] * xi->data[4*m+k]
+				- d2eta[64*i+16*m+4*j+k] * xi->data[4*m+l])/(tau+EPS);		/* dxi * dxi */
+
+
+  return GSL_SUCCESS;
+}
+
+/* Box SqrtDelta */
+int boxSqrtDelta (double tau, const double * y, double * f, void * params)
+{
+  int i, j, k, l, m, n;
+  const double * I = y+5+16+1;
+  const double * dI_Inv = y+5+16+1+16+16;
+  const double * dEta = y+5+16+1+16+16+64+64;
+  const double * d2I_Inv = y+5+16+1+16+16+64+64+64;
+  const double * d2Eta = y+5+16+1+16+16+64+64+64+256+256;
+  const double * SqrtDelta = y+5+16;
+  
+  /* Gamma is the matrix inverse of eta */
+  int signum;
+  gsl_permutation * p = gsl_permutation_alloc (4);
+  gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
+  gsl_matrix * gamma = gsl_matrix_calloc(4,4);
+  gsl_matrix * lu = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(lu, &eta.matrix);
+  gsl_linalg_LU_decomp (lu, p, &signum);
+  gsl_linalg_LU_invert (lu, p, gamma);
+    
+  /* Initialize the RHS to 0 */
+  memset(f, 0, sizeof(double));
+  
+  /* The vector tr(I dI^-1) */
+  double trIdI_inv[4] = {0, 0, 0, 0};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	trIdI_inv[i] += I[j*4+k]*dI_Inv[16*i+k*4+j];
+      }
+    }
+  }
+  
+  /* The vector tr(I dI^-1) */
+  double trGammadEta[4] = {0, 0, 0, 0};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+	trGammadEta[i] += gamma->data[j*4+k]*dEta[16*i+k*4+j];
+      }
+    }
+  }
+  
+  /* Now calculate the square of the sum of these (really we're contracting over the free index) */
+  gsl_matrix * metric = gsl_matrix_calloc(4,4);
+  metric_up_up(y, metric, params);
+  double tr2 = 0;
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      tr2 += (trIdI_inv[i]+trGammadEta[i])*(trIdI_inv[j]+trGammadEta[j])*gsl_matrix_get(metric,i,j);
+    }
+  }
+  
+  /* We really need half of this */
+  tr2 /= 2;
+  
+  /* Next, we need tr(I dI^-1 I dI^-1) */
+  double trIdI_invIdI_inv = 0;
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	for(l=0; l<4; l++)
+	  for(m=0; m<4; m++)
+	    for(n=0; n<4; n++)
+	      trIdI_invIdI_inv += I[i*4+j]*dI_Inv[16*m+j*4+k]*I[k*4+l]*dI_Inv[16*n+l*4+i]*gsl_matrix_get(metric,m,n);
+
+  /* Next, we need tr(gamma deta gamma deta) */
+  double trGammadEtaGammadEta = 0;
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	for(l=0; l<4; l++)
+	  for(m=0; m<4; m++)
+	    for(n=0; n<4; n++)
+	      trGammadEtaGammadEta += gamma->data[i*4+j]*dEta[16*m+j*4+k]*gamma->data[k*4+l]*dEta[16*n+l*4+i]*gsl_matrix_get(metric,m,n);
+
+  /* Now, tr(I * d2I_Inv) */
+  double trId2I_Inv = 0;
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	trId2I_Inv += I[4*i+j]*d2I_Inv[64*j+16*i+4*k+k];
+
+  /* Now, tr(gamma * d2I_Inv) */
+  double trGammad2Eta = 0;
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+	trGammad2Eta += gamma->data[4*i+j]*d2Eta[64*j+16*i+4*k+k];
+
+  /* We have everything we need, now just calculate Box SqrtDelta */
+  *(f) = (*SqrtDelta)*(tr2-trIdI_invIdI_inv-trGammadEtaGammadEta+trId2I_Inv+trGammad2Eta)/2;
+  
+  return GSL_SUCCESS;
+}
+
+/* V0 */
+int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, const double * v0, double * f, void * params)
+{
+  int i;
+  double rhs = 0;
+  
+  for(i=0; i<4; i++)
+  {
+    rhs -= gsl_matrix_get(q, i, i);
+  }
+  
+  rhs = (rhs*(*v0)/2 - (*v0) - (*dal_sqrt_delta)/2)/(tau + EPS);
+  
+  *f = rhs;
+  
   return GSL_SUCCESS;
 }
 
@@ -614,6 +854,16 @@ int func (double tau, const double y[], double f[], void *params)
   detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
 
   d2I_Inv(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64, f+5+16+1+16+16+64+64+64, params);
+   
+  d2xi(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64+256, f+5+16+1+16+16+64+64+64+256, params);
+  
+  const double *d2xi_vals = y+5+16+1+16+16+64+64+64+256;
+  d2eta(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, y+5+16+1+16+16+64+64+64+256+256, f+5+16+1+16+16+64+64+64+256+256, params);
+  
+  /* Calculate Box SqrtDelta */
+  double box_sqrt_delta = 0;
+  boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+  V0RHS (tau, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+1, f+5+16+1+16+16+64+64+64+256+256+1, params);
   
   return GSL_SUCCESS;
 }
@@ -663,6 +913,13 @@ int main (void)
   double h = 1e-6;
   double r0 = 10.0;
   double m = 1.0;
+  
+  /* These are used in the initial conditions for d2xi */
+  double r1 = m/(3*gsl_pow_2(r0)*(2*m-r0));
+  double r2 = m/(3*r0);
+  double r3 = (2*m-r0)*m/(3*gsl_pow_4(r0));
+  
+  /* Initial Condidions */
   double y[NUM_EQS] = { 
     10.0, 0.0, 0.0, 0.0, 0.0, /* r, r', theta, phi, t */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* Q^a'_b' */
@@ -700,7 +957,30 @@ int main (void)
     0.0, 0.0, 0.0, (2*m/(gsl_pow_2(r0)*(2*m-r0)))/2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -(2*m/(gsl_pow_2(r0)*(2*m-r0)))/2, 0.0, 0.0, 0.0, /* d2I */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, m/r0/2, 0.0, 0.0, 0.0, 0.0, 0.0, -m/r0/2, 0.0, 0.0, /* d2I */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, m/r0/2, 0.0, 0.0, -m/r0/2, 0.0, /* d2I */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 /* d2I */
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* d2I */
+    
+    /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
+    /*        r                       theta                      phi                        t            */
+    /* r, theta,phi,  t        r,  theta,  phi,  t       r,  theta,  phi,  t       r,  theta,  phi,  t   */
+    0.0,  0.0,  0.0,  0.0,    0.0,  2*r2, 0.0,  0.0,    0.0,  0.0,  2*r2, 0.0,    0.0,  0.0,  0.0, -4*r3,/* r,r */
+    0.0,  -r2,  0.0,  0.0,    -r2,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* r,theta */
+    0.0,  0.0,  -r2,  0.0,    0.0,  0.0,  0.0,  0.0,    -r2,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* r,phi */
+    0.0,  0.0,  0.0,  2*r3,   0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    2*r3, 0.0,  0.0,  0.0, /* r,t */
+    
+    0.0,   r1,  0.0,  0.0,     r1,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* theta,r */
+    -2*r1,0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  -4*r2,0.0,    0.0,  0.0,  0.0,  2*r3,/* theta,theta */
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  2*r2, 0.0,    0.0,  2*r2, 0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* theta,phi */
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  -r3,    0.0,  0.0,  0.0,  0.0,    0.0,  -r3,  0.0,  0.0, /* theta,t */
+    
+    0.0,  0.0,   r1,  0.0,    0.0,  0.0,  0.0,  0.0,     r1,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* phi,r */
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  2*r2, 0.0,    0.0,  2*r2, 0.0,  0.0,    0.0,  0.0,  0.0,  0.0, /* phi,theta */
+    -2*r1,0.0,  0.0,  0.0,    0.0,  -4*r2,0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  2*r3,/* phi,phi */ 
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  -r3,    0.0,  0.0,  -r3,  0.0, /* phi,t */
+    
+    0.0,  0.0,  0.0,  -2*r1,  0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    -2*r1,0.0,  0.0,  0.0, /* t,r */
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  -r2,    0.0,  0.0,  0.0,  0.0,    0.0,  -r2,  0.0,  0.0, /* t,theta */
+    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  0.0,    0.0,  0.0,  0.0,  -r2,    0.0,  0.0,  -r2,  0.0, /* t,phi */
+    4*r1, 0.0,  0.0,  0.0,    0.0,  2*r2, 0.0,  0.0,    0.0,  0.0,  2*r2, 0.0,    0.0,  0.0,  0.0,  0.0, /* t,t */
     }; 
 
   while (tau < tau1)
@@ -720,16 +1000,22 @@ int main (void)
     gsl_linalg_LU_decomp (lu, p, &signum);
     gsl_linalg_LU_invert (lu, p, gamma);
     
+    /* Calculate Box SqrtDelta */
+    double box_sqrt_delta = 0;
+    boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+    
     /* Output the results */
     printf ("%.5f", tau);
     for(i=0; i<NUM_EQS; i++)
     {
       printf (", %.5f", y[i]);
     }
-    printf (", %.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3)); 
-    printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-    printf ("%.5f, %.5f, %.5f, %.5f, ", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-    printf ("%.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3)); 
+    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
+    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
+    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+    printf(", %.5f", box_sqrt_delta);
+    //printf(", %.5f", y[NUM_EQS-1]);
     printf("\n");
     
     /* Don't let the step size get bigger than 1 */
@@ -740,15 +1026,15 @@ int main (void)
     }*/
       
     /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-8)
+    if (h < 1e-13 || tau > 73.0)
     {
       fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
       break;
     }
   }
 
-  gsl_odeiv_evolve_free (e);
-  gsl_odeiv_control_free (c);
-  gsl_odeiv_step_free (s);
+  //gsl_odeiv_evolve_free (e);
+  //gsl_odeiv_control_free (c);
+  //gsl_odeiv_step_free (s);
   return 0;
 }
