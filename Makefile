@@ -1,13 +1,15 @@
-CFLAGS=-Wall
-LDFLAGS=-L/usr/local/atlas/lib -lgsl -lcblas -latlas -lm
-OUTPUT=VanVleck
+CFLAGS=-Wall -I/opt/local/include
+LDFLAGS=-L/usr/local/atlas/lib -L/opt/local/lib -lgsl -lcblas -latlas -lm
 CC = gcc
 
-all: $(OUTPUT)
+all: VanVleck Geodesics
 
 VanVleck: SchwVanVleck.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(OUTPUT) SchwVanVleck.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwVanVleck.c
+
+Geodesics: SchwGeodesicEqns.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwGeodesicEqns.c
 	
 clean:
-	rm -f VanVleck
+	rm -f VanVleck Geodesics
   
