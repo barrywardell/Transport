@@ -4,8 +4,11 @@ CC = gcc
 
 all: VanVleck Geodesics
 
-VanVleck: SchwVanVleck.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwVanVleck.c
+VanVleckNariai: VanVleck.c NariaiTensors.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c NariaiTensors.c
+
+VanVleckSchw: VanVleck.c SchwTensors.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c SchwTensors.c
 
 Geodesics: SchwGeodesicEqns.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwGeodesicEqns.c
