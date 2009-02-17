@@ -14,5 +14,5 @@ Geodesics: SchwGeodesicEqns.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwGeodesicEqns.c
 	
 clean:
-	rm -f VanVleck Geodesics
+	rm -f VanVleckNariai VanVleckSchw Geodesics
   
