@@ -10,6 +10,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  */
+#ifndef SPACETIMETENSORS
+#define SPACETIMETENSORS
 
 struct geodesic_params {
   double m; /* Black Hole Mass */
@@ -25,10 +27,12 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params);
 int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params);
 
 /* The tensor Rsigma^a_{ b c} = R^a_{ b d c} u^d */
-int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *r_sigma[], void *params);
+int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector *r_sigma, void *params);
 
 /* The matrix Gu^a_b = \Gamma^a_{b c} u^c */
 int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *params);
 
 /* RHS of geodesic equations */
 int geodesicRHS (double tau, const gsl_vector * y, gsl_vector * f, void *params);
+
+#endif

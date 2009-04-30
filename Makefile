@@ -2,17 +2,34 @@ CFLAGS=-Wall -I/opt/local/include
 LDFLAGS=-L/usr/local/atlas/lib -L/opt/local/lib -lgsl -lcblas -latlas -lm
 CC = gcc
 
-all: VanVleck Geodesics
+.PHONY: all V0 VanVleck Geodesics
 
-VanVleckNariai: VanVleck.c NariaiTensors.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c NariaiTensors.c
+all: VanVleck Geodesics V0
 
-VanVleckSchw: VanVleck.c SchwTensors.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c SchwTensors.c
+V0: V0Nariai V0Schw
 
-Geodesics: SchwGeodesicEqns.c
+VanVleck: VanVleckNariai VanVleckSchw
+
+Geodesics: SchwGeodesics
+
+VanVleckNariai: VanVleck.c NariaiTensors.c VanVleckEquations.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c NariaiTensors.c VanVleckEquations.c
+
+VanVleckSchw: VanVleck.c SchwTensors.c VanVleckEquations.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c SchwTensors.c VanVleckEquations.c
+
+V0Nariai: V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
+
+V0Schw: V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
+
+SchwGeodesics: SchwGeodesicEqns.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwGeodesicEqns.c
 	
 clean:
-	rm -f VanVleckNariai VanVleckSchw Geodesics
+	rm -f V0Nariai V0Schw VanVleckNariai VanVleckSchw SchwGeodesics
+
+fullclean: clean
+	rm -f *.csv
   

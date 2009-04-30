@@ -69,7 +69,7 @@ int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)
 /* Calculates the tensor Rsigma^a_{ b c} = R^a_{ b d c} u^d and fill the values into r_sigma, which is an array of matrices.
    We use the convention that c is the index of the array and a and b are the indices of the matrices. Note that we have already
    set theat=Pi/2 and uth=0. */
-int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *r_sigma[], void *params)
+int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, void *params)
 {
   struct geodesic_params p = *(struct geodesic_params *)params;
   double m = p.m;
@@ -77,33 +77,29 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *r_sigma[],
   double uph = gsl_vector_get(yp,3);
   double ut = gsl_vector_get(yp,4);
   double r = gsl_vector_get(y,0);
-  int i;
   
   /* Initialize all elements to 0 */
-  for(i=0; i<4; i++)
-  {
-    gsl_matrix_set_zero(r_sigma[i]);
-  }
+  gsl_vector_set_zero(r_sigma);
   
   /* Now, set the non-zero elements */
-  gsl_matrix_set(r_sigma[1],0, 1, -m*ur/r);
-  gsl_matrix_set(r_sigma[0],0, 2, m*uph/r);
-  gsl_matrix_set(r_sigma[2],0, 2, -m*ur/r);
-  gsl_matrix_set(r_sigma[0],0, 3, -(2*(-r+2*m))*m*ut/gsl_pow_4(r));
-  gsl_matrix_set(r_sigma[3],0, 3, (2*(-r+2*m))*m*ur/gsl_pow_4(r));
-  gsl_matrix_set(r_sigma[1],1, 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_matrix_set(r_sigma[1],1, 2, -2*m*uph/r);
-  gsl_matrix_set(r_sigma[1],1, 3, (-r+2*m)*m*ut/gsl_pow_4(r));
-  gsl_matrix_set(r_sigma[0],2, 0, m*uph/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_matrix_set(r_sigma[2],2, 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_matrix_set(r_sigma[1],2, 1, 2*m*uph/r);
-  gsl_matrix_set(r_sigma[2],2, 3, (-r+2*m)*m*ut/gsl_pow_4(r));
-  gsl_matrix_set(r_sigma[3],2, 3, -(-r+2*m)*m*uph/gsl_pow_4(r));
-  gsl_matrix_set(r_sigma[0],3, 0, -2*m*ut/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_matrix_set(r_sigma[3],3, 0, 2*m*ur/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_matrix_set(r_sigma[1],3, 1, -m*ut/r);
-  gsl_matrix_set(r_sigma[2],3, 2, -m*ut/r);
-  gsl_matrix_set(r_sigma[3],3, 2, m*uph/r);
+  gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -m*ur/r);
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 2, m*uph/r);
+  gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -m*ur/r);
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, -(2*(-r+2*m))*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, (2*(-r+2*m))*m*ur/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, -2*m*uph/r);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, (-r+2*m)*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m*uph/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, 2*m*uph/r);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, (-r+2*m)*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, -(-r+2*m)*m*uph/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2*m*ut/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, 2*m*ur/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, -m*ut/r);
+  gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, -m*ut/r);
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 2, m*uph/r);
   
   return GSL_SUCCESS;
 }
