@@ -1,5 +1,8 @@
 /* Numerically solve the transport equation for V_0
- * along a geodesic.
+ * along a geodesic. This file contains the RHS's for all the transport equations
+ * required to calculate V_0 from Delta^1/2. Most are derivatives of sigma and in
+ * that case they are named sigma_n_m_RHS to indicate n unprimed and m primed derivatives
+ * of sigma and u means upstairs, d downstairs.
  *
  * Copyright (C) 2009 Barry Wardell
  *  
@@ -23,7 +26,7 @@
 
 #define EPS	10e-12
 
-int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, gsl_matrix * f, void * params)
+int I_RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, gsl_matrix * f, void * params)
 {
   /* Gu */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
@@ -35,7 +38,7 @@ int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   return GSL_SUCCESS;
 }
 
-int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * q, const gsl_matrix * eta, gsl_matrix * f, void * params)
+int sigma_1u_1d_RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * q, const gsl_matrix * eta, gsl_matrix * f, void * params)
 {
   int i;
   
@@ -149,7 +152,7 @@ int dIRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
 }
 
 /* RHS of transport equation for dxi. The matrix elements are the first two indices. */
-int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], gsl_matrix * f[], void * params)
+int sigma_dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], gsl_matrix * f[], void * params)
 {
   int i, j, k;
   
