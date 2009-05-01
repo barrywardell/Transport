@@ -35,7 +35,7 @@ int I_RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
   Gu(y, yp, gu, params);
   
   /* RHS */
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, I, gu, 0, f);
+  gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, I, gu, 0, f);
   
   return GSL_SUCCESS;
 }
@@ -484,7 +484,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
   const double * SqrtDelta  = y+5+16;
   gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
   gsl_matrix   * gamma      = gsl_matrix_calloc(4,4);
-  gsl_matris   * metric     = gsl_matrix_calloc(4,4);
+  gsl_matrix   * metric     = gsl_matrix_calloc(4,4);
 
   /* Compute gamma matrix */
   gammaBitensor( &eta.matrix, gamma );
