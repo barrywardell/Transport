@@ -26,9 +26,11 @@
 
 #define EPS	10e-12
 
+/* Bivector of parallel displacement, g_{a'}^{~ a}. We use the defining equation
+   g_{a' ~ ;b'}^{a} \sigma^{b'} = 0 */
 int I_RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, gsl_matrix * f, void * params)
 {
-  /* Gu */
+  /* Gamma*u */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
   Gu(y, yp, gu, params);
   
@@ -453,29 +455,45 @@ int d2eta (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
   return GSL_SUCCESS;
 }
 
+/* gamma is the matrix inverse of eta */
+int gammaBitensor ( const gsl_matrix * eta, gsl_matrix * gamma )
+{
+  /* Gamma is the matrix inverse of eta */
+  int signum;
+  gsl_permutation * p = gsl_permutation_alloc (4);
+  gsl_matrix * lu = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(lu, eta);
+  gsl_linalg_LU_decomp (lu, p, &signum);
+  gsl_linalg_LU_invert (lu, p, gamma);
+
+  gsl_matrix_free(lu);
+  gsl_permutation_free(p);
+
+  return GSL_SUCCESS;
+}
+
 /* Box SqrtDelta */
 int boxSqrtDelta (double tau, const double * y, double * f, void * params)
 {
   int i, j, k, l, m, n;
-  const double * I = y+5+16+1;
-  const double * dI_Inv = y+5+16+1+16+16;
-  const double * dEta = y+5+16+1+16+16+64+64;
-  const double * d2I_Inv = y+5+16+1+16+16+64+64+64;
-  const double * d2Eta = y+5+16+1+16+16+64+64+64+256+256;
-  const double * SqrtDelta = y+5+16;
-  
-  /* Gamma is the matrix inverse of eta */
-  int signum;
-  gsl_permutation * p = gsl_permutation_alloc (4);
+  const double * I          = y+5+16+1;
+  const double * dI_Inv     = y+5+16+1+16+16;
+  const double * dEta       = y+5+16+1+16+16+64+64;
+  const double * d2I_Inv    = y+5+16+1+16+16+64+64+64;
+  const double * d2Eta      = y+5+16+1+16+16+64+64+64+256+256;
+  const double * SqrtDelta  = y+5+16;
   gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
-  gsl_matrix * gamma = gsl_matrix_calloc(4,4);
-  gsl_matrix * lu = gsl_matrix_calloc(4,4);
-  gsl_matrix_memcpy(lu, &eta.matrix);
-  gsl_linalg_LU_decomp (lu, p, &signum);
-  gsl_linalg_LU_invert (lu, p, gamma);
-    
+  gsl_matrix   * gamma      = gsl_matrix_calloc(4,4);
+  gsl_matris   * metric     = gsl_matrix_calloc(4,4);
+
+  /* Compute gamma matrix */
+  gammaBitensor( &eta.matrix, gamma );
+
+  /* Compute metric (in primed coordinates) */
+  metric_up_up(y, metric, params);
+
   /* Initialize the RHS to 0 */
-  memset(f, 0, sizeof(double));
+  *f = 0;
   
   /* The vector tr(I dI^-1) */
   double trIdI_inv[4] = {0, 0, 0, 0};
@@ -485,12 +503,12 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
     {
       for(k=0; k<4; k++)
       {
-        trIdI_inv[i] += I[j*4+k]*dI_Inv[16*i+k*4+j];
+        trIdI_inv[i] += I[j*4+k]*dI_Inv[k*16+j*4+i];
       }
     }
   }
-  
-  /* The vector tr(I dI^-1) */
+
+  /* The vector tr(gamma dEta^-1) */
   double trGammadEta[4] = {0, 0, 0, 0};
   for(i=0; i<4; i++)
   {
@@ -498,14 +516,12 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
     {
       for(k=0; k<4; k++)
       {
-        trGammadEta[i] += gamma->data[j*4+k]*dEta[16*i+k*4+j];
+        trGammadEta[i] += gsl_matrix_get(gamma, j, k) * dEta[16*k+4*j+i];
       }
     }
   }
   
-  /* Now calculate the square of the sum of these (really we're contracting over the free index) */
-  gsl_matrix * metric = gsl_matrix_calloc(4,4);
-  metric_up_up(y, metric, params);
+  /* Now contracting over the free index) */
   double tr2 = 0;
   for(i=0; i<4; i++)
   {
@@ -526,7 +542,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
             for(n=0; n<4; n++)
-              trIdI_invIdI_inv += I[i*4+j]*dI_Inv[16*m+j*4+k]*I[k*4+l]*dI_Inv[16*n+l*4+i]*gsl_matrix_get(metric,m,n);
+              trIdI_invIdI_inv += I[i*4+j]*dI_Inv[16*j+4*k+m]*I[4*k+l]*dI_Inv[16*l+4*i+n]*gsl_matrix_get(metric,m,n);
 
   /* Next, we need tr(gamma deta gamma deta) */
   double trGammadEtaGammadEta = 0;
@@ -536,21 +552,23 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
             for(n=0; n<4; n++)
-              trGammadEtaGammadEta += gamma->data[i*4+j]*dEta[16*m+j*4+k]*gamma->data[k*4+l]*dEta[16*n+l*4+i]*gsl_matrix_get(metric,m,n);
+              trGammadEtaGammadEta += gsl_matrix_get(gamma,i,j)*dEta[16*j+4*k+m]*gsl_matrix_get(gamma,k,l)*dEta[16*l+4*i+n]*gsl_matrix_get(metric,m,n);
 
   /* Now, tr(I * d2I_Inv) */
   double trId2I_Inv = 0;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
-        trId2I_Inv += I[4*i+j]*d2I_Inv[64*j+16*i+4*k+k];
+        for(l=0; l<4; l++)
+          trId2I_Inv += I[4*i+j]*d2I_Inv[64*j+16*i+4*k+l]*gsl_matrix_get(metric, k, l);
 
   /* Now, tr(gamma * d2I_Inv) */
   double trGammad2Eta = 0;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
-        trGammad2Eta += gamma->data[4*i+j]*d2Eta[64*j+16*i+4*k+k];
+        for(l=0; l<4; l++)
+          trGammad2Eta += gsl_matrix_get(gamma, i, j)*d2Eta[64*j+16*i+4*k+l]*gsl_matrix_get(metric, k, l);
 
   /* We have everything we need, now just calculate Box SqrtDelta */
   *(f) = (*SqrtDelta)*(tr2-trIdI_invIdI_inv-trGammadEtaGammadEta+trId2I_Inv+trGammad2Eta)/2;
