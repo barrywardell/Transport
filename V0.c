@@ -71,7 +71,7 @@ int func (double tau, const double y[], double f[], void *params)
     dI_vals[i] = &dI_vals_views[i].matrix;
   }
   
-  dIRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
+  dIinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
   
   /* Equation for dxi */
   gsl_matrix_view dxi_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+64+0,4,4),
