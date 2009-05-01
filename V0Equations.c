@@ -165,7 +165,7 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
           gsl_vector_set(f, 16*i + j + k, gsl_vector_get(f, 16*i + j + k)
                          - gsl_matrix_get(xi, i, l)*gsl_vector_get(sigma_R, 16*l + 4*j + k)
                          + gsl_matrix_get(xi, l, j)*gsl_vector_get(sigma_R, 16*i + 4*l + k)
-                         + gsl_matrix_get(xi, l, k)*gsl_vector_get(sigma_R, 16*i + 4*l + j))
+                         + gsl_matrix_get(xi, l, k)*gsl_vector_get(sigma_R, 16*i + 4*l + j)
                          );
 
   /* Christoffel terms */
@@ -283,10 +283,10 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                            + gsl_vector_get(dIinv, 16*i+4*j+m) * gsl_vector_get(dxi, 16*m+4*k+l)
                            )/(tau+EPS)
 
-                           /* R_sigma * dI */
-                           + gsl_vector_get(dI, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*j + 4*m + l)
-                           + gsl_vector_get(dI, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*j + 4*m + k)
-                           - gsl_vector_get(dI, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
+                           /* R_sigma * dIinv */
+                           + gsl_vector_get(dIinv, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*j + 4*m + l)
+                           + gsl_vector_get(dIinv, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*j + 4*m + k)
+                           - gsl_vector_get(dIinv, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
                            );
 
 
