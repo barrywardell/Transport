@@ -118,7 +118,7 @@ int func (double tau, const double y[], double f[], void *params)
   d2xiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64+256, f+5+16+1+16+16+64+64+64+256, params);
   
   const double *d2xi_vals = y+5+16+1+16+16+64+64+64+256;
-  d2eta(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, y+5+16+1+16+16+64+64+64+256+256, f+5+16+1+16+16+64+64+64+256+256, params);
+  d2etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, y+5+16+1+16+16+64+64+64+256+256, f+5+16+1+16+16+64+64+64+256+256, params);
   
   /* Calculate Box SqrtDelta */
   double box_sqrt_delta = 0;
