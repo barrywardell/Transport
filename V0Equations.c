@@ -289,57 +289,51 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                            - gsl_vector_get(dIinv, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
                            );
 
-
   return GSL_SUCCESS;
 }
 
-int d2xi (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_matrix * dxi[], const gsl_matrix * I, const gsl_matrix * dI[], const double * d2xi, double * f, void * params)
+int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_vector * dxi, const gsl_matrix * I, const gsl_vector * dIinv, const gsl_vector * d2xi, gsl_vector * f, void * params)
 {
   int i, j, k, l, m;
-  
-  /* Initialize the RHS to 0 */
-  memset(f, 0, 256*sizeof(double));
-  
+
   /* Christoffel terms */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
   Gu(y, yp, gu, params);
-  
+
   /* xi */
   gsl_matrix * xi = gsl_matrix_calloc(4,4);
   gsl_matrix_memcpy(xi, q);
-  
+
   for( i=0; i<4; i++)
   {
     gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
   }
-  
+
   /* And calculate sigma_R */
-  gsl_matrix * sigma_R[4];
-  for (i=0; i<4; i++)
-  {
-    sigma_R[i] = gsl_matrix_alloc(4,4);
-  }
+  gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
-  
-  /* FIXME: Riemann derivative term missing */
+
+  /* FIXME: Riemann terms missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
-            f[64*i+16*j+4*k+l] +=  d2xi[64*i+16*j+4*m+l] * gu->data[4*m+k]              /* gu * d2I */
-                                + d2xi[64*i+16*j+4*k+m] * gu->data[4*m+l]
-                                + d2xi[64*i+16*m+4*k+l] * gu->data[4*m+j]
-                                - d2xi[64*m+16*j+4*k+l] * gu->data[4*i+m]
-                                + (d2xi[64*m+16*j+4*k+l]
-                                - dxi[k]->data[4*i+m] * dxi[l]->data[4*m+j]
-                                - dxi[j]->data[4*i+m] * dxi[l]->data[4*m+k]
-                                - dxi[l]->data[4*i+m] * dxi[k]->data[4*m+j]
-                                - d2xi[64*m+16*j+4*k+l] * xi->data[4*i+m]
-                                - d2xi[64*i+16*m+4*k+l] * xi->data[4*m+j]
-                                - d2xi[64*i+16*m+4*j+l] * xi->data[4*m+k]
-                                - d2xi[64*i+16*m+4*j+k] * xi->data[4*m+l])/(tau+EPS);           /* dxi * dxi */
+            gsl_vector_set(f, 64*i+16*j+4*k+l,
+                           (gsl_vector_get(d2xi, 64*i+16*j+4*k+l)
 
+                           /* dxi * dxi */
+                           - gsl_vector_get(dxi, 16*i+4*m+k) * gsl_vector_get(dxi, 16*m+4*j+l)
+                           - gsl_vector_get(dxi, 16*i+4*m+j) * gsl_vector_get(dxi, 16*m+4*k+l)
+                           - gsl_vector_get(dxi, 16*i+4*m+l) * gsl_vector_get(dxi, 16*m+4*j+k)
+
+                           /* d2xi * xi */
+                           - gsl_vector_get(d2xi, 64*m+16*j+4*k+l) * gsl_matrix_get(xi, i, m)
+                           - gsl_vector_get(d2xi, 64*i+16*m+4*k+l) * gsl_matrix_get(xi, m, j)
+                           - gsl_vector_get(d2xi, 64*i+16*m+4*j+l) * gsl_matrix_get(xi, m, k)
+                           - gsl_vector_get(d2xi, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
+                           )/(tau+EPS)
+                           );
 
   return GSL_SUCCESS;
 }
