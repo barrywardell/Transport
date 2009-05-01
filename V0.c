@@ -28,8 +28,6 @@
 /* RHS of our system of ODEs */
 int func (double tau, const double y[], double f[], void *params)
 {
-  int i;
-  
   /* Geodesic equations: 5 coupled equations for r,r',theta,phi,t */
   gsl_vector_view geodesic_eqs = gsl_vector_view_array(f,5);
   gsl_vector_const_view geodesic_coords = gsl_vector_const_view_array(y,5);
@@ -54,103 +52,60 @@ int func (double tau, const double y[], double f[], void *params)
   etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &eta_vals.matrix, &eta_eqs.matrix, params);
   
   /* Equation for dI */
-  gsl_matrix_view dI_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+0,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+16,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+32,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+48,4,4)};
-  gsl_matrix_const_view dI_vals_views[4] = {gsl_matrix_const_view_array(y+5+16+1+16+16+0,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+16,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+32,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+48,4,4)};
-  gsl_matrix * dI_eqs[4];
-  const gsl_matrix * dI_vals[4];
-  
-  for (i=0; i<4; i++)
-  {
-    dI_eqs[i] = &dI_eqs_views[i].matrix;
-    dI_vals[i] = &dI_vals_views[i].matrix;
-  }
-  
+  gsl_vector_view dI_eqs_view = gsl_vector_view_array(f+5+16+1+16+16,4*4*4);
+  gsl_vector_const_view dI_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16,4*4*4);
+  gsl_vector * dI_eqs = &dI_eqs_view.vector;
+  const gsl_vector * dI_vals = &dI_vals_view.vector;
+
   dIinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
   
   /* Equation for dxi */
-  gsl_matrix_view dxi_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+64+0,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+16,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+32,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+48,4,4)};
-  gsl_matrix_const_view dxi_vals_views[4] = {gsl_matrix_const_view_array(y+5+16+1+16+16+64+0,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+16,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+32,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+48,4,4)};
-  gsl_matrix * dxi_eqs[4];
-  const gsl_matrix * dxi_vals[4];
-  
-  for (i=0; i<4; i++)
-  {
-    dxi_eqs[i] = &dxi_eqs_views[i].matrix;
-    dxi_vals[i] = &dxi_vals_views[i].matrix;
-  }
-  
+  gsl_vector_view dxi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64,4*4*4);
+  gsl_vector_const_view dxi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64,4*4*4);
+  gsl_vector * dxi_eqs = &dxi_eqs_view.vector;
+  const gsl_vector * dxi_vals = &dxi_vals_view.vector;
+
   dxiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, dxi_eqs, params);
 
   /* Equation for deta */
-  gsl_matrix_view deta_eqs_views[4] = {gsl_matrix_view_array(f+5+16+1+16+16+64+64+0,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+64+16,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+64+32,4,4),
-                               gsl_matrix_view_array(f+5+16+1+16+16+64+64+48,4,4)};
-  gsl_matrix_const_view deta_vals_views[4] = {gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+0,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+16,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+32,4,4),
-                                      gsl_matrix_const_view_array(y+5+16+1+16+16+64+64+48,4,4)};
-  gsl_matrix * deta_eqs[4];
-  const gsl_matrix * deta_vals[4];
-  
-  for (i=0; i<4; i++)
-  {
-    deta_eqs[i] = &deta_eqs_views[i].matrix;
-    deta_vals[i] = &deta_vals_views[i].matrix;
-  }
-  
+  gsl_vector_view deta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64,4*4*4);
+  gsl_vector_const_view deta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64,4*4*4);
+  gsl_vector * deta_eqs = &deta_eqs_view.vector;
+  const gsl_vector * deta_vals = &deta_vals_view.vector;
+
   detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
 
-  d2IinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64, f+5+16+1+16+16+64+64+64, params);
-   
-  d2xiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, y+5+16+1+16+16+64+64+64+256, f+5+16+1+16+16+64+64+64+256, params);
-  
-  const double *d2xi_vals = y+5+16+1+16+16+64+64+64+256;
-  d2etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, y+5+16+1+16+16+64+64+64+256+256, f+5+16+1+16+16+64+64+64+256+256, params);
-  
+  /* Equation for d2Iinv */
+  gsl_vector_view d2Iinv_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64,4*4*4*4);
+  gsl_vector_const_view d2Iinv_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64,4*4*4*4);
+  gsl_vector * d2Iinv_eqs = &d2Iinv_eqs_view.vector;
+  const gsl_vector * d2Iinv_vals = &d2Iinv_vals_view.vector;
+
+  d2IinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2Iinv_vals, d2Iinv_eqs, params);
+
+  /* Equation for d2xi */
+  gsl_vector_view d2xi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256,4*4*4*4);
+  gsl_vector_const_view d2xi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256,4*4*4*4);
+  gsl_vector * d2xi_eqs = &d2xi_eqs_view.vector;
+  const gsl_vector * d2xi_vals = &d2xi_vals_view.vector;
+
+  d2xiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2xi_vals, d2xi_eqs, params);
+
+  /* Equation for d2eta */
+  gsl_vector_view d2eta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
+  gsl_vector_const_view d2eta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
+  gsl_vector * d2eta_eqs = &d2eta_eqs_view.vector;
+  const gsl_vector * d2eta_vals = &d2eta_vals_view.vector;
+
+  d2etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, d2eta_vals, d2eta_eqs, params);
+
   /* Calculate Box SqrtDelta */
   double box_sqrt_delta = 0;
   boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+
+  /* Calculate V0 */
   V0RHS (tau, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+1, f+5+16+1+16+16+64+64+64+256+256+1, params);
   
-  return GSL_SUCCESS;
-}
-
-/* Calculate the Jacobian Matrix J_{ij} = df_i/dy_j and also the vector df_i/dt */
-int jac (double tau, const double y[], double *dfdy, double dfdtau[], void *params)
-{
-  struct geodesic_params p = *(struct geodesic_params *)params;
-  
-  /* df_i/dy_j */
-  gsl_matrix_view dfdy_mat = gsl_matrix_view_array (dfdy, 5, 5);
-  gsl_matrix * m = &dfdy_mat.matrix; 
-
-  gsl_matrix_set_zero(m);
-  
-  gsl_matrix_set (m, 0, 1, 1.0); /* dr/dr' */
-  gsl_matrix_set (m, 1, 0, (3*gsl_pow_2(p.l)*(4*p.m - y[0]) - 2*p.m*p.type*gsl_pow_2(y[0]))/gsl_pow_5(y[0]) ); /* dr'/dr */
-  gsl_matrix_set (m, 3, 0, -2*p.l/gsl_pow_3(y[0]) ); /* dphi/dr */
-  gsl_matrix_set (m, 4, 0, -2*p.e*p.m/gsl_pow_2(y[0]-2*p.m) ); /* dt/dr */
-
-
-  /* df_i/dtau */
-  gsl_vector_view dfdtau_vec = gsl_vector_view_array (dfdtau, 5);
-  gsl_vector * v = &dfdtau_vec.vector;
-  
-  gsl_vector_set_zero(v);
-
   return GSL_SUCCESS;
 }
 
@@ -167,11 +122,11 @@ int main (void)
   /* Time-like geodesic starting at r=10M and going in to r=4M */
   struct geodesic_params params = {1,0.950382,3.59211,-1};
   
-  gsl_odeiv_system sys = {func, jac, NUM_EQS, &params};
+  gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
   double tau = 0.0, tau1 = 1000.0;
   double h = 1e-6;
-  double r0 = 10.0;
+  double r0 = 0.5;
   double m = 1.0;
   
   /* These are used in the initial conditions for d2xi */
