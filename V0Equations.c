@@ -138,10 +138,8 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   }
 
   /* The first term on the RHS is just dxi/tau */
-  for(i=0; i<4; i++)
-    for(j=0; j<4; j++)
-      for(k=0; k<4; k++)
-        gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(dxi, 16*i + 4*j + k)/(tau+EPS));
+  gsl_vector_memcpy(f, dxi);
+  gsl_vector_scale(f, 1./(tau+EPS));
 
   /* Now we  work out the three xi*dxi terms */
   for(i=0; i<4; i++)
@@ -200,10 +198,8 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   }
 
   /* The first term on the RHS is just deta/tau */
-  for(i=0; i<4; i++)
-    for(j=0; j<4; j++)
-      for(k=0; k<4; k++)
-        gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(deta, 16*i + 4*j + k)/(tau+EPS));
+  gsl_vector_memcpy(f, deta);
+  gsl_vector_scale(f, 1./(tau+EPS));
 
   /* Now we  work out the two xi*deta terms and one eta dxi term*/
   for(i=0; i<4; i++)
@@ -356,9 +352,11 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                            - gsl_vector_get(d2xi, 64*m+16*j+4*k+l) * gsl_matrix_get(gu, i, m)
 
                            /* r_sigma * r_sigma */
+                          + (tau+EPS)*(
                            + gsl_vector_get(sigma_R, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*m + 4*k + j)
                            + gsl_vector_get(sigma_R, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*m + 4*l + j)
                            + gsl_vector_get(sigma_R, 16*i+4*m+j)*gsl_vector_get(sigma_R, 16*m + 4*l + k)
+                           )
 
                            /* r_sigma * dxi */
                            - gsl_vector_get(dxi, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
@@ -378,8 +376,10 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                gsl_vector_get(d2xi, 64*i+16*j+4*k+l)
 
                                /* r_sigma * r_sigma */
+                               + (tau+EPS)*(
                                + gsl_vector_get(sigma_R, 16*m+4*l+n)*gsl_vector_get(sigma_R, 16*o + 4*m + k)*gsl_matrix_get(metric, n, i)*gsl_matrix_get(metric_dn, o, j)
                                + gsl_vector_get(sigma_R, 16*m+4*k+n)*gsl_vector_get(sigma_R, 16*o + 4*m + l)*gsl_matrix_get(metric, n, i)*gsl_matrix_get(metric_dn, o, j)
+                               )
 
                                /* r_sigma * dxi */
                                + gsl_vector_get(dxi, o*i+4*k+n)*gsl_vector_get(sigma_R, 16*i + 4*m + l)*gsl_matrix_get(metric_dn, o, j)*gsl_matrix_get(metric, n, m)
