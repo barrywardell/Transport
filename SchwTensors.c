@@ -150,3 +150,130 @@ int geodesicRHS (double tau, const gsl_vector * y, gsl_vector * f, void *params)
   
   return GSL_SUCCESS;
 }
+
+/* The Riemann tensor R^{a}_{~ b c d} */
+int Riemann(double * R, double r0, void * params)
+{
+	int r=0, th=1, ph=2, t=3;
+	
+    struct geodesic_params p = *(struct geodesic_params *)params;
+	double m = p.m;
+	
+	/* All expressions are related to one of these three */
+	double r1 = m/(gsl_pow_2(r0)*(2*m-r0));
+	double r2 = m/r0;
+	double r3 = (2*m-r0)*m/gsl_pow_4(r0);
+	
+	R[64*r+16*th+4*r+th] 	= -r2;
+	R[64*r+16*ph+4*r+ph] 	= -r2;
+	R[64*r+16*t+4*r+t] 		= 2*r3;
+	R[64*th+16*r+4*r+th] 	= -r1;
+	R[64*th+16*ph+4*th+ph] 	= 2*r2;
+	R[64*th+16*t+4*th+t] 	= -r3;
+	R[64*ph+16*r+4*r+ph] 	= -r1;
+	R[64*ph+16*th+4*th+ph] 	= -2*r2;
+	R[64*ph+16*t+4*ph+t] 	= -r3;
+	R[64*t+16*r+4*r+t] 		= 2*r1;
+	R[64*t+16*th+4*th+t] 	= r2;
+	R[64*t+16*ph+4*ph+t] 	= r2;
+	R[64*r+16*th+4*th+r] 	= r2;
+	R[64*r+16*ph+4*ph+r] 	= r2;
+	R[64*r+16*t+4*t+r] 		= -2*r3;
+	R[64*th+16*r+4*th+r] 	= r1;
+	R[64*th+16*ph+4*ph+th] 	= -2*r2;
+	R[64*th+16*t+4*t+th] 	= r3;
+	R[64*ph+16*r+4*ph+r] 	= r1;
+	R[64*ph+16*th+4*ph+th] 	= 2*r2;
+	R[64*ph+16*t+4*t+ph] 	= r3;
+	R[64*t+16*r+4*t+r] 		= -2*r1;
+	R[64*t+16*th+4*t+th] 	= -r2;
+	R[64*t+16*ph+4*t+ph] 	= -r2;
+
+	return GSL_SUCCESS;
+}
+
+/* Riemann tensor symmetrized over second and 4th indices, RiemannSym^{a}_{~ b c d} = R^{a}_{~ (c |b| d)} */ 
+int RiemannSym(double * R, double r0, void * params)
+{
+	int r=0, th=1, ph=2, t=3;
+	
+    struct geodesic_params p = *(struct geodesic_params *)params;
+	double m = p.m;
+	
+	/* All expressions are related to one of these three */
+	double r1 = m/(gsl_pow_2(r0)*(2*m-r0));
+	double r2 = m/r0;
+	double r3 = (2*m-r0)*m/gsl_pow_4(r0);
+
+	R[64*th+16*th+4*r+r] 	= 2*r1;
+	R[64*ph+16*ph+4*r+r] 	= 2*r1;
+	R[64*t+16*t+4*r+r] 		= -4*r1;
+	R[64*th+16*r+4*th+r] 	= -r1;
+	R[64*r+16*th+4*th+r] 	= r2;
+	R[64*ph+16*r+4*ph+r] 	= -r1;
+	R[64*r+16*ph+4*ph+r] 	= r2;
+	R[64*t+16*r+4*t+r] 		= 2*r1;
+	R[64*r+16*t+4*t+r] 		= -2*r3;
+	R[64*th+16*r+4*r+th] 	= -r1;
+	R[64*r+16*th+4*r+th] 	= r2;
+	R[64*r+16*r+4*th+th] 	= -2*r2;
+	R[64*ph+16*ph+4*th+th] 	= 4*r2;
+	R[64*t+16*t+4*th+th] 	= -2*r2;
+	R[64*ph+16*th+4*ph+th] 	= -2*r2;
+	R[64*th+16*ph+4*ph+th] 	= -2*r2;
+	R[64*t+16*th+4*t+th] 	= r2;
+	R[64*th+16*t+4*t+th] 	= r3;
+	R[64*ph+16*r+4*r+ph] 	= -r1;
+	R[64*r+16*ph+4*r+ph] 	= r2;
+	R[64*ph+16*th+4*th+ph] 	= -2*r2;
+	R[64*th+16*ph+4*th+ph] 	= -2*r2;
+	R[64*r+16*r+4*ph+ph] 	= -2*r2;
+	R[64*th+16*th+4*ph+ph] 	= 4*r2;
+	R[64*t+16*t+4*ph+ph] 	= -2*r2;
+	R[64*t+16*ph+4*t+ph] 	= r2;
+	R[64*ph+16*t+4*t+ph] 	= r3;
+	R[64*t+16*r+4*r+t] 		= 2*r1;
+	R[64*r+16*t+4*r+t] 		= -2*r3;
+	R[64*t+16*th+4*th+t] 	= r2;
+	R[64*th+16*t+4*th+t] 	= r3;
+	R[64*t+16*ph+4*ph+t] 	= r2;
+	R[64*ph+16*t+4*ph+t] 	= r3;
+	R[64*r+16*r+4*t+t] 		= 4*r3;
+	R[64*th+16*th+4*t+t] 	= -2*r3;
+	R[64*ph+16*ph+4*t+t] 	= -2*r3;
+	
+	return GSL_SUCCESS;
+}
+
+int d2IinvInit(double * d2xi, double r0, void * params)
+{
+    int i;
+	/* d2Iinv^{a'}_{  b' c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
+	Riemann(d2xi, r0, params);
+	for(i=0; i<4*4*4*4; i++)
+	  d2xi[i] *= -1/2;
+	
+	return GSL_SUCCESS;
+}
+
+int d2xiInit(double * d2xi, double r0, void * params)
+{
+    int i;
+	/* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
+	RiemannSym(d2xi, r0, params);
+	for(i=0; i<4*4*4*4; i++)
+	  d2xi[i] *= -2/3;
+	
+	return GSL_SUCCESS;
+}
+
+int d2etaInit(double * d2eta, double r0, void * params)
+{
+    int i;
+	/* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
+	RiemannSym(d2eta, r0, params);
+	for(i=0; i<4*4*4*4; i++)
+	  d2eta[i] *= -1/3;
+	
+	return GSL_SUCCESS;
+}

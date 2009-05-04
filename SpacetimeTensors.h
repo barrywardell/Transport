@@ -35,4 +35,8 @@ int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *param
 /* RHS of geodesic equations */
 int geodesicRHS (double tau, const gsl_vector * y, gsl_vector * f, void *params);
 
+/* Initial values */
+int d2IinvInit(double * d2Iinv, double r0, void * params);
+int d2xiInit(double * d2xi, double r0, void * params);
+int d2etaInit(double * d2eta, double r0, void * params);
 #endif
