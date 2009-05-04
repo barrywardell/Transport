@@ -25,10 +25,10 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
 
   gsl_matrix_set_zero(metric);
   
-  gsl_matrix_set(metric,0,0,1-gsl_pow_2(r));
+  gsl_matrix_set(metric,0,0,1.-gsl_pow_2(r));
   gsl_matrix_set(metric,1,1,1);
   gsl_matrix_set(metric,2,2,1);
-  gsl_matrix_set(metric,3,3,1/(gsl_pow_2(r)-1));
+  gsl_matrix_set(metric,3,3,1./(gsl_pow_2(r)-1.));
   
   return GSL_SUCCESS;
 }
@@ -41,10 +41,10 @@ int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
 
   gsl_matrix_set_zero(metric);
 
-  gsl_matrix_set(metric,0,0,1/(1-gsl_pow_2(r)));
+  gsl_matrix_set(metric,0,0,1./(1.-gsl_pow_2(r)));
   gsl_matrix_set(metric,1,1,1);
   gsl_matrix_set(metric,2,2,1);
-  gsl_matrix_set(metric,3,3,gsl_pow_2(r)-1);
+  gsl_matrix_set(metric,3,3,gsl_pow_2(r)-1.);
 
   return GSL_SUCCESS;
 }
@@ -64,11 +64,11 @@ int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)
   gsl_matrix_set_zero(s);
 
   /* Set non-zero elements */
-  gsl_matrix_set(s,0,0,(-1 + r * r) * ut * ut);
-  gsl_matrix_set(s,0,3,-(-1 + r * r) * ut * ur);
+  gsl_matrix_set(s,0,0,(-1. + r * r) * ut * ut);
+  gsl_matrix_set(s,0,3,-(-1. + r * r) * ut * ur);
   gsl_matrix_set(s,1,1, uph * uph);
-  gsl_matrix_set(s,3,0,1 / (-1 + r * r) * ur * ut);
-  gsl_matrix_set(s,3,3,-1 / (-1 + r * r) * ur * ur);
+  gsl_matrix_set(s,3,0,1. / (-1. + r * r) * ur * ut);
+  gsl_matrix_set(s,3,3,-1. / (-1. + r * r) * ur * ur);
 
   return GSL_SUCCESS;
 }
@@ -91,8 +91,8 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
   gsl_vector_set(r_sigma, 0*16 + 3*4 + 3, (-1 + r * r) * ur);		// r,t,t
   gsl_vector_set(r_sigma, 1*16 + 2*4 + 1, -uph);			// theta,phi,theta
   gsl_vector_set(r_sigma, 2*16 + 1*4 + 1, uph);				// phi, theta, theta
-  gsl_vector_set(r_sigma, 3*16 + 0*4 + 0, -1 / (-1 + r * r) * ut);	// t,r,r
-  gsl_vector_set(r_sigma, 3*16 + 0*4 + 3, 1 / (-1 + r * r) * ur);	// t,r,t
+  gsl_vector_set(r_sigma, 3*16 + 0*4 + 0, -1. / (-1 + r * r) * ut);	// t,r,r
+  gsl_vector_set(r_sigma, 3*16 + 0*4 + 3, 1. / (-1 + r * r) * ur);	// t,r,t
 
   return GSL_SUCCESS;
 }
@@ -107,10 +107,10 @@ int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *param
   
   gsl_matrix_set_zero(gu);
   
-  gsl_matrix_set(gu,0,0,-r / (-1 + r * r) * ur);
-  gsl_matrix_set(gu,0,3,(-1 + r * r) * r * ut);
-  gsl_matrix_set(gu,3,0,r / (-1 + r * r) * ut);
-  gsl_matrix_set(gu,3,3,r / (-1 + r * r) * ur);
+  gsl_matrix_set(gu,0,0,-r / (-1. + r * r) * ur);
+  gsl_matrix_set(gu,0,3,(-1. + r * r) * r * ut);
+  gsl_matrix_set(gu,3,0,r / (-1. + r * r) * ut);
+  gsl_matrix_set(gu,3,3,r / (-1. + r * r) * ur);
 
   return GSL_SUCCESS;
 }
@@ -137,14 +137,14 @@ int Riemann(double * R, double r0, void * params)
 {
     int r=0, th=1, ph=2, t=3;
 
-    R(r,t,r,t)      = r0*r0 - 1;
+    R(r,t,r,t)      = r0*r0 - 1.;
     R(r,t,t,r)      = 1- r0*r0;
     R(th,ph,th,ph)  = 1;
     R(th,ph,ph,th)  = -1;
     R(ph,th,th,ph)  = -1;
     R(ph,th,ph,th)  = 1;
-    R(t,r,r,t)      = 1/(r0*r0-1);
-    R(t,r,t,r)      = 1/(1-r0*r0);
+    R(t,r,r,t)      = 1./(r0*r0-1.);
+    R(t,r,t,r)      = 1./(1.-r0*r0);
 
     return GSL_SUCCESS;
 }

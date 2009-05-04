@@ -24,7 +24,7 @@
 #include <gsl/gsl_linalg.h>
 #include "SpacetimeTensors.h"
 
-#define EPS	10e-12
+#define EPS	10e-18
 
 /* Bivector of parallel displacement, g_{a'}^{~ a}. We use the defining equation
    g_{a' ~ ;b'}^{a} \sigma^{b'} = 0 */
@@ -262,13 +262,15 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
+  gsl_vector_set_zero(f);
+
   /* FIXME: Riemann derivative term missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
-            gsl_vector_set(f, 64*i+16*j+4*k+l,
+            gsl_vector_set(f, 64*i+16*j+4*k+l, gsl_vector_get(f, 64*i+16*j+4*k+l)
                            /* gu * d2I */
                            + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+l) * gsl_matrix_get(gu, m, k)
                            + gsl_vector_get(d2Iinv, 64*i+16*j+4*k+m) * gsl_matrix_get(gu, m, l)
@@ -277,7 +279,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                            /* xi * d2I */
                            - (
                            + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+l) * gsl_matrix_get(xi, m, k)
-                           + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+k) * gsl_matrix_get(gu, m, l)
+                           + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+k) * gsl_matrix_get(xi, m, l)
 
                            /* dxi * dIinv */
                            + gsl_vector_get(dIinv, 16*i+4*j+m) * gsl_vector_get(dxi, 16*m+4*k+l)
@@ -319,6 +321,9 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
+  gsl_vector_memcpy(f, d2xi);
+  gsl_vector_scale(f, 1./(tau+EPS));
+
   /* FIXME: Riemann derivative terms missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
@@ -326,7 +331,9 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
             gsl_vector_set(f, 64*i+16*j+4*k+l,
-                           (gsl_vector_get(d2xi, 64*i+16*j+4*k+l)
+                           gsl_vector_get(f, 64*i+16*j+4*k+l)
+
+                           + (
 
                            /* dxi * dxi */
                            - gsl_vector_get(dxi, 16*i+4*m+k) * gsl_vector_get(dxi, 16*m+4*j+l)
@@ -403,6 +410,9 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
+  gsl_vector_memcpy(f, d2eta);
+  gsl_vector_scale(f, 1./(tau+EPS));
+
   /* FIXME: Riemann derivative term missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
@@ -410,7 +420,7 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
         for(l=0; l<4; l++)
           for(m=0; m<4; m++)
             gsl_vector_set(f, 64*i+16*j+4*k+l,
-                           (gsl_vector_get(d2eta, 64*i+16*j+4*k+l)
+                           gsl_vector_get(f, 64*i+16*j+4*k+l) + (
 
                            /* deta * dxi */
                            - gsl_vector_get(deta, 16*i+4*m+j) * gsl_vector_get(dxi, 16*m+4*k+l)
@@ -476,7 +486,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
   metric_up_up(y, metric, params);
 
   /* Initialize the RHS to 0 */
-  *f = 0;
+  *f = 0.;
   
   /* The vector tr(I dI^-1) */
   double trIdI_inv[4] = {0, 0, 0, 0};
@@ -505,7 +515,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
   }
   
   /* Now contracting over the free index) */
-  double tr2 = 0;
+  double tr2 = 0.;
   for(i=0; i<4; i++)
   {
     for(j=0; j<4; j++)
@@ -513,12 +523,12 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
       tr2 += (trIdI_inv[i]+trGammadEta[i])*(trIdI_inv[j]+trGammadEta[j])*gsl_matrix_get(metric,i,j);
     }
   }
-  
+
   /* We really need half of this */
-  tr2 /= 2;
+  tr2 /= 2.;
   
   /* Next, we need tr(I dI^-1 I dI^-1) */
-  double trIdI_invIdI_inv = 0;
+  double trIdI_invIdI_inv = 0.;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -528,7 +538,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
               trIdI_invIdI_inv += I[i*4+j]*dI_Inv[16*j+4*k+m]*I[4*k+l]*dI_Inv[16*l+4*i+n]*gsl_matrix_get(metric,m,n);
 
   /* Next, we need tr(gamma deta gamma deta) */
-  double trGammadEtaGammadEta = 0;
+  double trGammadEtaGammadEta = 0.;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -538,7 +548,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
               trGammadEtaGammadEta += gsl_matrix_get(gamma,i,j)*dEta[16*j+4*k+m]*gsl_matrix_get(gamma,k,l)*dEta[16*l+4*i+n]*gsl_matrix_get(metric,m,n);
 
   /* Now, tr(I * d2I_Inv) */
-  double trId2I_Inv = 0;
+  double trId2I_Inv = 0.;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -546,7 +556,7 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
           trId2I_Inv += I[4*i+j]*d2I_Inv[64*j+16*i+4*k+l]*gsl_matrix_get(metric, k, l);
 
   /* Now, tr(gamma * d2I_Inv) */
-  double trGammad2Eta = 0;
+  double trGammad2Eta = 0.;
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -554,8 +564,8 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
           trGammad2Eta += gsl_matrix_get(gamma, i, j)*d2Eta[64*j+16*i+4*k+l]*gsl_matrix_get(metric, k, l);
 
   /* We have everything we need, now just calculate Box SqrtDelta */
-  *(f) = (*SqrtDelta)*(tr2-trIdI_invIdI_inv-trGammadEtaGammadEta+trId2I_Inv+trGammad2Eta)/2;
-  
+  *(f) = (*SqrtDelta)*(tr2-trIdI_invIdI_inv-trGammadEtaGammadEta+trId2I_Inv+trGammad2Eta)/2.;
+
   return GSL_SUCCESS;
 }
 
@@ -563,17 +573,19 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
 int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, const double * v0, double * f, void * params)
 {
   int i;
-  double rhs = 0;
-  
-  for(i=0; i<4; i++)
+  double rhs = 0.;
+  if(tau!=0.)
   {
-    rhs -= gsl_matrix_get(q, i, i);
+      for(i=0; i<4; i++)
+      {
+          rhs -= gsl_matrix_get(q, i, i);
+      }
+
+      rhs = (rhs*(*v0)/2. - (*v0) - (*dal_sqrt_delta)/2.)/(tau);
+
+      *f = rhs;
   }
-  
-  rhs = (rhs*(*v0)/2 - (*v0) - (*dal_sqrt_delta)/2)/(tau + EPS);
-  
-  *f = rhs;
-  
+
   return GSL_SUCCESS;
 }
 
@@ -584,7 +596,7 @@ int d2IinvInit(double * d2xi, double r0, void * params)
     /* d2Iinv^{a'}_{  b' c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
     Riemann(d2xi, r0, params);
     for(i=0; i<4*4*4*4; i++)
-      d2xi[i] *= -1/2;
+      d2xi[i] *= -1./2.;
 
     return GSL_SUCCESS;
 }
@@ -595,7 +607,7 @@ int d2xiInit(double * d2xi, double r0, void * params)
     /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
     RiemannSym(d2xi, r0, params);
     for(i=0; i<4*4*4*4; i++)
-      d2xi[i] *= -2/3;
+      d2xi[i] *= -2./3.;
 
     return GSL_SUCCESS;
 }
@@ -606,7 +618,7 @@ int d2etaInit(double * d2eta, double r0, void * params)
     /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
     RiemannSym(d2eta, r0, params);
     for(i=0; i<4*4*4*4; i++)
-      d2eta[i] *= -1/3;
+      d2eta[i] *= -1./3.;
 
     return GSL_SUCCESS;
 }

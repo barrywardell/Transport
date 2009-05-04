@@ -2,7 +2,7 @@
  * along a geodesic.
  *
  * Copyright (C) 2009 Barry Wardell
- *  
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -32,25 +32,25 @@ int func (double tau, const double y[], double f[], void *params)
   gsl_vector_view geodesic_eqs = gsl_vector_view_array(f,5);
   gsl_vector_const_view geodesic_coords = gsl_vector_const_view_array(y,5);
   geodesicRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, params);
-  
+
   /* Equations for Q^a_b */
   gsl_matrix_view q_eqs = gsl_matrix_view_array(f+5,4,4);
   gsl_matrix_const_view q_vals = gsl_matrix_const_view_array(y+5,4,4);
   qRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &q_eqs.matrix, params);
-  
+
   /* Equation for Delta^1/2 */
   sqrtDeltaRHS(tau, &q_vals.matrix, &y[5+16], &f[5+16], params);
-  
+
   /* Equation for I */
   gsl_matrix_view I_eqs = gsl_matrix_view_array(f+5+16+1,4,4);
   gsl_matrix_const_view I_vals = gsl_matrix_const_view_array(y+5+16+1,4,4);
   IRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &I_eqs.matrix, params);
-  
+
   /* Equation for eta */
   gsl_matrix_view eta_eqs = gsl_matrix_view_array(f+5+16+1+16,4,4);
   gsl_matrix_const_view eta_vals = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
   etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &eta_vals.matrix, &eta_eqs.matrix, params);
-  
+
   /* Equation for dI */
   gsl_vector_view dI_eqs_view = gsl_vector_view_array(f+5+16+1+16+16,4*4*4);
   gsl_vector_const_view dI_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16,4*4*4);
@@ -58,7 +58,7 @@ int func (double tau, const double y[], double f[], void *params)
   const gsl_vector * dI_vals = &dI_vals_view.vector;
 
   dIinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
-  
+
   /* Equation for dxi */
   gsl_vector_view dxi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64,4*4*4);
   gsl_vector_const_view dxi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64,4*4*4);
@@ -105,14 +105,14 @@ int func (double tau, const double y[], double f[], void *params)
 
   /* Calculate V0 */
   V0RHS (tau, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
-  
+
   return GSL_SUCCESS;
 }
 
 int main (void)
 {
   int i;
-  
+
   /* Use a Runge-Kutta integrator with adaptive step-size */
   const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
   gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
@@ -121,7 +121,7 @@ int main (void)
 
   /* Time-like geodesic starting at r=10M and going in to r=4M */
   struct geodesic_params params = {1,sqrt(15./16.),1.,0};
-  
+
   gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
   double tau = 0.0, tau1 = 1000.0;
@@ -130,9 +130,9 @@ int main (void)
   double m = 1.0;
   double xi=0;
   double rp0 = -sqrt(3./16.);
-  
+
   /* Initial Conditions */
-  double y[NUM_EQS] = { 
+  double y[NUM_EQS] = {
     /* r, r', theta, phi, t */
     r0, rp0, 0.0, 0.0, 0.0,
 
@@ -193,21 +193,21 @@ int main (void)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-
-	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+
     /* d2eta - this will get filled in later */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -219,12 +219,12 @@ int main (void)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -237,14 +237,43 @@ int main (void)
   d2xiInit(y+5+16+1+16+16+64+64+64+256, r0, &params);
   d2etaInit(y+5+16+1+16+16+64+64+64+256+256, r0, &params);
 
+  /* Gamma is the matrix inverse of eta */
+  int signum;
+  gsl_permutation * p = gsl_permutation_alloc (4);
+  gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
+  gsl_matrix * gamma = gsl_matrix_calloc(4,4);
+  gsl_matrix * lu = gsl_matrix_calloc(4,4);
+  gsl_matrix_memcpy(lu, &eta.matrix);
+  gsl_linalg_LU_decomp (lu, p, &signum);
+  gsl_linalg_LU_invert (lu, p, gamma);
+
+  /* Calculate Box SqrtDelta */
+  double box_sqrt_delta = 0;
+
+    boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+  /* Output the initial values */
+  printf ("%.5f", tau);
+  for(i=0; i<NUM_EQS; i++)
+  {
+      printf (", %.5f", y[i]);
+  }
+  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
+  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
+  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
+  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+  printf(", %.5f", box_sqrt_delta);
+  printf(", %.5f", y[NUM_EQS-1]);
+  printf("\n");
+
   /* Solve system of ODEs */
   while (tau < tau1)
   {
-    int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
-
+//          fprintf(stderr,", %.5f", y[NUM_EQS-1]);
+    int status = gsl_odeiv_evolve_apply (e, NULL, s, &sys, &tau, tau1, &h, y);
+//fprintf(stderr,", %.5f\n", y[NUM_EQS-1]);
     if (status != GSL_SUCCESS)
       break;
-    
+
     /* Gamma is the matrix inverse of eta */
     int signum;
     gsl_permutation * p = gsl_permutation_alloc (4);
@@ -254,32 +283,32 @@ int main (void)
     gsl_matrix_memcpy(lu, &eta.matrix);
     gsl_linalg_LU_decomp (lu, p, &signum);
     gsl_linalg_LU_invert (lu, p, gamma);
-    
+
     /* Calculate Box SqrtDelta */
     double box_sqrt_delta = 0;
     boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
-    
+
     /* Output the results */
     printf ("%.5f", tau);
     for(i=0; i<NUM_EQS; i++)
     {
       printf (", %.5f", y[i]);
     }
-    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3)); 
+    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
     printf(", %.5f", box_sqrt_delta);
     printf(", %.5f", y[NUM_EQS-1]);
     printf("\n");
-    
+
     /* Don't let the step size get bigger than 1 */
     /*if (h > .10)
     {
       fprintf(stderr,"Warning: step size %e greater than 1 is not allowed. Using step size of 1.0.\n",h);
       h=.10;
     }*/
-      
+
     /* Exit if step size get smaller than 10^-12 */
     if (h < 1e-13 || tau > 73.0)
     {
