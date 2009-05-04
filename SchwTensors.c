@@ -164,30 +164,30 @@ int Riemann(double * R, double r0, void * params)
 	double r2 = m/r0;
 	double r3 = (2*m-r0)*m/gsl_pow_4(r0);
 	
-	R[64*r+16*th+4*r+th] 	= -r2;
-	R[64*r+16*ph+4*r+ph] 	= -r2;
-	R[64*r+16*t+4*r+t] 		= 2*r3;
-	R[64*th+16*r+4*r+th] 	= -r1;
-	R[64*th+16*ph+4*th+ph] 	= 2*r2;
-	R[64*th+16*t+4*th+t] 	= -r3;
-	R[64*ph+16*r+4*r+ph] 	= -r1;
-	R[64*ph+16*th+4*th+ph] 	= -2*r2;
-	R[64*ph+16*t+4*ph+t] 	= -r3;
-	R[64*t+16*r+4*r+t] 		= 2*r1;
-	R[64*t+16*th+4*th+t] 	= r2;
-	R[64*t+16*ph+4*ph+t] 	= r2;
-	R[64*r+16*th+4*th+r] 	= r2;
-	R[64*r+16*ph+4*ph+r] 	= r2;
-	R[64*r+16*t+4*t+r] 		= -2*r3;
-	R[64*th+16*r+4*th+r] 	= r1;
-	R[64*th+16*ph+4*ph+th] 	= -2*r2;
-	R[64*th+16*t+4*t+th] 	= r3;
-	R[64*ph+16*r+4*ph+r] 	= r1;
-	R[64*ph+16*th+4*ph+th] 	= 2*r2;
-	R[64*ph+16*t+4*t+ph] 	= r3;
-	R[64*t+16*r+4*t+r] 		= -2*r1;
-	R[64*t+16*th+4*t+th] 	= -r2;
-	R[64*t+16*ph+4*t+ph] 	= -r2;
+    R(r,th,r,th) 	= -r2;
+	R(r,ph,r,ph) 	= -r2;
+	R(r,t,r,t) 		= 2*r3;
+	R(th,r,r,th) 	= -r1;
+	R(th,ph,th,ph) 	= 2*r2;
+	R(th,t,th,t) 	= -r3;
+	R(ph,r,r,ph) 	= -r1;
+	R(ph,th,th,ph) 	= -2*r2;
+	R(ph,t,ph,t) 	= -r3;
+	R(t,r,r,t) 		= 2*r1;
+	R(t,th,th,t) 	= r2;
+	R(t,ph,ph,t) 	= r2;
+	R(r,th,th,r) 	= r2;
+	R(r,ph,ph,r) 	= r2;
+	R(r,t,t,r) 		= -2*r3;
+	R(th,r,th,r) 	= r1;
+	R(th,ph,ph,th) 	= -2*r2;
+	R(th,t,t,th) 	= r3;
+	R(ph,r,ph,r) 	= r1;
+	R(ph,th,ph,th) 	= 2*r2;
+	R(ph,t,t,ph) 	= r3;
+	R(t,r,t,r) 		= -2*r1;
+	R(t,th,t,th) 	= -r2;
+	R(t,ph,t,ph) 	= -r2;
 
 	return GSL_SUCCESS;
 }
@@ -205,75 +205,47 @@ int RiemannSym(double * R, double r0, void * params)
 	double r2 = m/r0;
 	double r3 = (2*m-r0)*m/gsl_pow_4(r0);
 
-	R[64*th+16*th+4*r+r] 	= 2*r1;
-	R[64*ph+16*ph+4*r+r] 	= 2*r1;
-	R[64*t+16*t+4*r+r] 		= -4*r1;
-	R[64*th+16*r+4*th+r] 	= -r1;
-	R[64*r+16*th+4*th+r] 	= r2;
-	R[64*ph+16*r+4*ph+r] 	= -r1;
-	R[64*r+16*ph+4*ph+r] 	= r2;
-	R[64*t+16*r+4*t+r] 		= 2*r1;
-	R[64*r+16*t+4*t+r] 		= -2*r3;
-	R[64*th+16*r+4*r+th] 	= -r1;
-	R[64*r+16*th+4*r+th] 	= r2;
-	R[64*r+16*r+4*th+th] 	= -2*r2;
-	R[64*ph+16*ph+4*th+th] 	= 4*r2;
-	R[64*t+16*t+4*th+th] 	= -2*r2;
-	R[64*ph+16*th+4*ph+th] 	= -2*r2;
-	R[64*th+16*ph+4*ph+th] 	= -2*r2;
-	R[64*t+16*th+4*t+th] 	= r2;
-	R[64*th+16*t+4*t+th] 	= r3;
-	R[64*ph+16*r+4*r+ph] 	= -r1;
-	R[64*r+16*ph+4*r+ph] 	= r2;
-	R[64*ph+16*th+4*th+ph] 	= -2*r2;
-	R[64*th+16*ph+4*th+ph] 	= -2*r2;
-	R[64*r+16*r+4*ph+ph] 	= -2*r2;
-	R[64*th+16*th+4*ph+ph] 	= 4*r2;
-	R[64*t+16*t+4*ph+ph] 	= -2*r2;
-	R[64*t+16*ph+4*t+ph] 	= r2;
-	R[64*ph+16*t+4*t+ph] 	= r3;
-	R[64*t+16*r+4*r+t] 		= 2*r1;
-	R[64*r+16*t+4*r+t] 		= -2*r3;
-	R[64*t+16*th+4*th+t] 	= r2;
-	R[64*th+16*t+4*th+t] 	= r3;
-	R[64*t+16*ph+4*ph+t] 	= r2;
-	R[64*ph+16*t+4*ph+t] 	= r3;
-	R[64*r+16*r+4*t+t] 		= 4*r3;
-	R[64*th+16*th+4*t+t] 	= -2*r3;
-	R[64*ph+16*ph+4*t+t] 	= -2*r3;
+	R(th,th,r,r) 	= 2*r1;
+	R(ph,ph,r,r) 	= 2*r1;
+	R(t,t,r,r) 		= -4*r1;
+	R(th,r,th,r) 	= -r1;
+	R(r,th,th,r) 	= r2;
+	R(ph,r,ph,r) 	= -r1;
+	R(r,ph,ph,r) 	= r2;
+	R(t,r,t,r) 		= 2*r1;
+	R(r,t,t,r) 		= -2*r3;
+	R(th,r,r,th) 	= -r1;
+	R(r,th,r,th) 	= r2;
+	R(r,r,th,th) 	= -2*r2;
+	R(ph,ph,th,th) 	= 4*r2;
+	R(t,t,th,th) 	= -2*r2;
+	R(ph,th,ph,th) 	= -2*r2;
+	R(th,ph,ph,th) 	= -2*r2;
+	R(t,th,t,th) 	= r2;
+	R(th,t,t,th) 	= r3;
+	R(ph,r,r,ph) 	= -r1;
+	R(r,ph,r,ph) 	= r2;
+	R(ph,th,th,ph) 	= -2*r2;
+	R(th,ph,th,ph) 	= -2*r2;
+	R(r,r,ph,ph) 	= -2*r2;
+	R(th,th,ph,ph) 	= 4*r2;
+	R(t,t,ph,ph) 	= -2*r2;
+	R(t,ph,t,ph) 	= r2;
+	R(ph,t,t,ph) 	= r3;
+	R(t,r,r,t) 		= 2*r1;
+	R(r,t,r,t) 		= -2*r3;
+	R(t,th,th,t) 	= r2;
+	R(th,t,th,t) 	= r3;
+	R(t,ph,ph,t) 	= r2;
+	R(ph,t,ph,t) 	= r3;
+	R(r,r,t,t) 		= 4*r3;
+	R(th,th,t,t) 	= -2*r3;
+	R(ph,ph,t,t) 	= -2*r3;
 	
 	return GSL_SUCCESS;
 }
 
-int d2IinvInit(double * d2xi, double r0, void * params)
+double RicciScalar()
 {
-    int i;
-	/* d2Iinv^{a'}_{  b' c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
-	Riemann(d2xi, r0, params);
-	for(i=0; i<4*4*4*4; i++)
-	  d2xi[i] *= -1/2;
-	
-	return GSL_SUCCESS;
-}
-
-int d2xiInit(double * d2xi, double r0, void * params)
-{
-    int i;
-	/* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
-	RiemannSym(d2xi, r0, params);
-	for(i=0; i<4*4*4*4; i++)
-	  d2xi[i] *= -2/3;
-	
-	return GSL_SUCCESS;
-}
-
-int d2etaInit(double * d2eta, double r0, void * params)
-{
-    int i;
-	/* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
-	RiemannSym(d2eta, r0, params);
-	for(i=0; i<4*4*4*4; i++)
-	  d2eta[i] *= -1/3;
-	
-	return GSL_SUCCESS;
+    return 0;
 }

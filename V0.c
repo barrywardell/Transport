@@ -120,19 +120,21 @@ int main (void)
   gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
 
   /* Time-like geodesic starting at r=10M and going in to r=4M */
-  struct geodesic_params params = {1,0.950382,3.59211,-1};
+  struct geodesic_params params = {1,sqrt(15./16.),1.,0};
   
   gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
   double tau = 0.0, tau1 = 1000.0;
   double h = 1e-2;
-  double r0 = 10;
+  double r0 = 0.5;
   double m = 1.0;
+  double xi=0;
+  double rp0 = -sqrt(3./16.);
   
   /* Initial Conditions */
   double y[NUM_EQS] = { 
     /* r, r', theta, phi, t */
-    r0, 0.0, 0.0, 0.0, 0.0,
+    r0, rp0, 0.0, 0.0, 0.0,
 
     /* Q^a'_b' */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -228,7 +230,7 @@ int main (void)
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
     /* V_0 */
-    0
+    RicciScalar() * (xi-1./6.)/2
   };
 
   d2IinvInit(y+5+16+1+16+16+64+64+64, r0, &params);
@@ -268,7 +270,7 @@ int main (void)
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
     printf(", %.5f", box_sqrt_delta);
-    //printf(", %.5f", y[NUM_EQS-1]);
+    printf(", %.5f", y[NUM_EQS-1]);
     printf("\n");
     
     /* Don't let the step size get bigger than 1 */

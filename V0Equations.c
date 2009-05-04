@@ -534,3 +534,37 @@ int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, cons
   
   return GSL_SUCCESS;
 }
+
+/* Initial conditions */
+int d2IinvInit(double * d2xi, double r0, void * params)
+{
+    int i;
+    /* d2Iinv^{a'}_{  b' c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
+    Riemann(d2xi, r0, params);
+    for(i=0; i<4*4*4*4; i++)
+      d2xi[i] *= -1/2;
+
+    return GSL_SUCCESS;
+}
+
+int d2xiInit(double * d2xi, double r0, void * params)
+{
+    int i;
+    /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
+    RiemannSym(d2xi, r0, params);
+    for(i=0; i<4*4*4*4; i++)
+      d2xi[i] *= -2/3;
+
+    return GSL_SUCCESS;
+}
+
+int d2etaInit(double * d2eta, double r0, void * params)
+{
+    int i;
+    /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
+    RiemannSym(d2eta, r0, params);
+    for(i=0; i<4*4*4*4; i++)
+      d2eta[i] *= -1/3;
+
+    return GSL_SUCCESS;
+}

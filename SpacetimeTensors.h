@@ -13,6 +13,9 @@
 #ifndef SPACETIMETENSORS
 #define SPACETIMETENSORS
 
+/* Handy macro for accessing tensor components from an array */
+#define R(A,B,C,D)  R[64*A+16*B+4*C+D]
+
 struct geodesic_params {
   double m; /* Black Hole Mass */
   double e; /* "Energy" constant of motion */
@@ -35,8 +38,12 @@ int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *param
 /* RHS of geodesic equations */
 int geodesicRHS (double tau, const gsl_vector * y, gsl_vector * f, void *params);
 
-/* Initial values */
-int d2IinvInit(double * d2Iinv, double r0, void * params);
-int d2xiInit(double * d2xi, double r0, void * params);
-int d2etaInit(double * d2eta, double r0, void * params);
+/* Riemann tensor, R^{a}_{~ b c d} */
+int Riemann(double * R, double r0, void * params);
+
+/* Symmetrized Riemann, R^{a}_{~ (c |b| d)} */
+int RiemannSym(double * R, double r0, void * params);
+
+/* Ricci Scalar */
+double RicciScalar();
 #endif

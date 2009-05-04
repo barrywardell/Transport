@@ -115,3 +115,46 @@ int geodesicRHS (double tau, const gsl_vector * y, gsl_vector * f, void *params)
   
   return GSL_SUCCESS;
 }
+
+/* The Riemann tensor R^{a}_{~ b c d} */
+int Riemann(double * R, double r0, void * params)
+{
+    int r=0, th=1, ph=2, t=3;
+
+    R(r,t,r,t)      = r0*r0 - 1;
+    R(r,t,t,r)      = 1- r0*r0;
+    R(th,ph,th,ph)  = 1;
+    R(th,ph,ph,th)  = -1;
+    R(ph,th,th,ph)  = -1;
+    R(ph,th,ph,th)  = 1;
+    R(t,r,r,t)      = 1/(r0*r0-1);
+    R(t,r,t,r)      = 1/(1-r0*r0);
+
+    return GSL_SUCCESS;
+}
+
+/* Riemann tensor symmetrized over second and 4th indices, RiemannSym^{a}_{~ b c d} = R^{a}_{~ (c |b| d)} */
+int RiemannSym(double * R, double r0, void * params)
+{
+    int r=0, th=1, ph=2, t=3;
+
+    R(r,r,t,t) = -1. + r0 * r0;
+    R(r,t,r,t) = (1. - r0*r0 ) / 2.;
+    R(r,t,t,r) = (1. - r0*r0) / 2.;
+    R(th,th,ph,ph) = 1.;
+    R(th,ph,th,ph) = -0.5;
+    R(th,ph,ph,th) = -0.5;
+    R(ph,th,th,ph) = -0.5;
+    R(ph,th,ph,th) = -0.5;
+    R(ph,ph,th,th) = 1.;
+    R(t,r,r,t) = 1. / (-1. + r0*r0) / 2.;
+    R(t,r,t,r) = 1. / (-1. + r0*r0) / 2.;
+    R(t,t,r,r) = 1. / (1. - r0*r0);
+
+    return GSL_SUCCESS;
+}
+
+double RicciScalar()
+{
+    return 4.;
+}

@@ -24,3 +24,8 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
 int gammaBitensor ( const gsl_matrix * eta, gsl_matrix * gamma );
 int boxSqrtDelta (double tau, const double * y, double * f, void * params);
 int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, const double * v0, double * f, void * params);
+
+/* Initial values */
+int d2IinvInit(double * d2Iinv, double r0, void * params);
+int d2xiInit(double * d2xi, double r0, void * params);
+int d2etaInit(double * d2eta, double r0, void * params);
