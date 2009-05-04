@@ -366,7 +366,7 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
-  /* FIXME: Riemann terms missing */
+  /* FIXME: Riemann derivative term missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -387,10 +387,15 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
                            )/(tau+EPS)
 
-                           /* gu * d2I */
+                           /* gu * d2eta */
                            + gsl_vector_get(d2eta, 64*i+16*m+4*k+l) * gsl_matrix_get(gu, m, j)
                            + gsl_vector_get(d2eta, 64*i+16*j+4*m+l) * gsl_matrix_get(gu, m, k)
                            + gsl_vector_get(d2eta, 64*i+16*j+4*k+m) * gsl_matrix_get(gu, m, l)
+
+                           /* r_sigma * deta */
+                           - gsl_vector_get(deta, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
+                           - gsl_vector_get(deta, 16*i+4*k+m)*gsl_vector_get(sigma_R, 16*m + 4*j + l)
+                           - gsl_vector_get(deta, 16*i+4*l+m)*gsl_vector_get(sigma_R, 16*m + 4*j + k)
                            );
 
   return GSL_SUCCESS;
