@@ -26,6 +26,9 @@ struct geodesic_params {
 /* The contravariant metric components */
 int metric_up_up(const double *y, gsl_matrix *metric, void *params);
 
+/* The covariant metric components */
+int metric_dn_dn(const double *y, gsl_matrix *metric, void *params);
+
 /* The matrix S^a_b = R^a_{ c b d} u^c u^d */
 int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params);
 

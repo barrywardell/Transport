@@ -34,6 +34,23 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
   return GSL_SUCCESS;
 }
 
+/* The covariant metric components for Schwarzschild (with theta=Pi/2) */
+int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
+{
+  gsl_matrix_set_zero(metric);
+
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double r = y[0];
+
+  gsl_matrix_set(metric,0,0,r/(r-2*m));
+  gsl_matrix_set(metric,1,1,gsl_pow_2(r));
+  gsl_matrix_set(metric,2,2,gsl_pow_2(r));
+  gsl_matrix_set(metric,3,3,-(r-2*m)/r);
+
+  return GSL_SUCCESS;
+}
+
 /* Calculates the matrix S^a_b = R^a_{ c b d} u^c u^d and fill the values into s.  Note that we have already
    set theat=Pi/2 */
 int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)

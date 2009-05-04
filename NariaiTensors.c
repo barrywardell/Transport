@@ -33,6 +33,22 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
   return GSL_SUCCESS;
 }
 
+/* The covariant metric components for Nariai (with theta=Pi/2) */
+int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
+{
+  (void)params;
+  double r = y[0];
+
+  gsl_matrix_set_zero(metric);
+
+  gsl_matrix_set(metric,0,0,1/(1-gsl_pow_2(r)));
+  gsl_matrix_set(metric,1,1,1);
+  gsl_matrix_set(metric,2,2,1);
+  gsl_matrix_set(metric,3,3,gsl_pow_2(r)-1);
+
+  return GSL_SUCCESS;
+}
+
 /* Calculates the matrix S^a_b = R^a_{ c b d} u^c u^d and fill the values into s.
  * Note that we have already set theat=Pi/2 
  */
