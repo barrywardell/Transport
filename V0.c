@@ -275,17 +275,11 @@ int main (void)
       break;
 
     /* Gamma is the matrix inverse of eta */
-    int signum;
-    gsl_permutation * p = gsl_permutation_alloc (4);
-    gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
-    gsl_matrix * gamma = gsl_matrix_calloc(4,4);
-    gsl_matrix * lu = gsl_matrix_calloc(4,4);
     gsl_matrix_memcpy(lu, &eta.matrix);
     gsl_linalg_LU_decomp (lu, p, &signum);
     gsl_linalg_LU_invert (lu, p, gamma);
 
     /* Calculate Box SqrtDelta */
-    double box_sqrt_delta = 0;
     boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
     /* Output the results */
@@ -317,8 +311,13 @@ int main (void)
     }
   }
 
-  //gsl_odeiv_evolve_free (e);
-  //gsl_odeiv_control_free (c);
-  //gsl_odeiv_step_free (s);
+  gsl_permutation_free(p);
+  gsl_matrix_free(gamma);
+  gsl_matrix_free(lu);
+
+  gsl_odeiv_evolve_free (e);
+  gsl_odeiv_control_free (c);
+  gsl_odeiv_step_free (s);
+
   return 0;
 }

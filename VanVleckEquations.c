@@ -62,6 +62,12 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
      Since we know the analytic form, don't compute it numerically */
   //gsl_matrix_set(f,1,1,0.0);
   
+  gsl_matrix_free(gu);
+  gsl_matrix_free(q_gu);
+  gsl_matrix_free(gu_q);
+  gsl_matrix_free(q2);
+  gsl_matrix_free(tau_S);
+
   return GSL_SUCCESS;
 }
 

@@ -33,10 +33,12 @@ int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   /* Gamma*u */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
   Gu(y, yp, gu, params);
-  
+
   /* RHS */
-  gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, I, gu, 0, f);
-  
+  gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, I, gu, 0., f);
+
+  gsl_matrix_free(gu);
+
   return GSL_SUCCESS;
 }
 
@@ -47,7 +49,7 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   /* eta*Gu */
   gsl_matrix * eta_gu = gsl_matrix_calloc(4,4);
   Gu(y, yp, eta_gu, params);
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, eta, eta_gu, 0, eta_gu);
+  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, eta, eta_gu, 0., eta_gu);
   
   /* Xi */
   gsl_matrix * xi = gsl_matrix_calloc(4,4);
@@ -65,6 +67,10 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   gsl_matrix_add(eta_rhs, eta_gu);
   gsl_matrix_memcpy(f, eta_rhs);
   
+  gsl_matrix_free(eta_gu);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(eta_rhs);
+
   return GSL_SUCCESS;
 }
 
@@ -74,7 +80,7 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
 
   /* First, we need I^-1 */
   int signum;
-  gsl_permutation * p = gsl_permutation_alloc (4);
+  gsl_permutation * p = gsl_permutation_calloc (4);
   gsl_matrix * I_inv = gsl_matrix_calloc(4,4);
   gsl_matrix * lu = gsl_matrix_calloc(4,4);
   gsl_matrix_memcpy(lu, I);
@@ -101,7 +107,7 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
 
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   for(i=0; i<4; i++)
@@ -121,6 +127,13 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
           gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*l + k)*gsl_matrix_get(gu, j, l)
             + gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(gu, l, k));
 
+  gsl_permutation_free(p);
+  gsl_matrix_free(I_inv);
+  gsl_matrix_free(lu);
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
+
   return GSL_SUCCESS;
 }
 
@@ -134,7 +147,7 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   gsl_matrix_memcpy(xi, q);
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   /* The first term on the RHS is just dxi/tau */
@@ -181,6 +194,10 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
                          + gsl_matrix_get(gu, l, j)*gsl_vector_get(dxi, 16*i + 4*l + k)
                          + gsl_matrix_get(gu, l, k)*gsl_vector_get(dxi, 16*i + 4*j + l));
 
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
+
   return GSL_SUCCESS;
 }
 
@@ -194,7 +211,7 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   gsl_matrix_memcpy(xi, q);
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   /* The first term on the RHS is just deta/tau */
@@ -236,6 +253,10 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                          + gsl_matrix_get(gu, l, j)*gsl_vector_get(deta, 16*i + 4*l + k)
                          + gsl_matrix_get(gu, l, k)*gsl_vector_get(deta, 16*i + 4*j + l));
 
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
+
   return GSL_SUCCESS;
 }
 
@@ -253,7 +274,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
 
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   /* And calculate sigma_R */
@@ -288,6 +309,10 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                            + gsl_vector_get(dIinv, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*j + 4*m + k)
                            - gsl_vector_get(dIinv, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
                            );
+
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
 
   return GSL_SUCCESS;
 }
@@ -387,6 +412,12 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                + gsl_vector_get(dxi, o*i+4*l+n)*gsl_vector_get(sigma_R, 16*i + 4*m + j)*gsl_matrix_get(metric_dn, o, k)*gsl_matrix_get(metric, n, m)
                                );
 
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
+  gsl_matrix_free(metric);
+  gsl_matrix_free(metric_dn);
+
   return GSL_SUCCESS;
 }
 
@@ -405,7 +436,7 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
 
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   /* And calculate sigma_R */
@@ -448,6 +479,10 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                            - gsl_vector_get(deta, 16*i+4*k+m)*gsl_vector_get(sigma_R, 16*m + 4*j + l)
                            - gsl_vector_get(deta, 16*i+4*l+m)*gsl_vector_get(sigma_R, 16*m + 4*j + k)
                            );
+
+  gsl_vector_free(sigma_R);
+  gsl_matrix_free(xi);
+  gsl_matrix_free(gu);
 
   return GSL_SUCCESS;
 }
@@ -570,6 +605,9 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
   /* We have everything we need, now just calculate Box SqrtDelta */
   *(f) = (*SqrtDelta)*(tr2-trIdI_invIdI_inv-trGammadEtaGammadEta+trId2I_Inv+trGammad2Eta)/2.;
 
+  gsl_matrix_free(metric);
+  gsl_matrix_free(gamma);
+
   return GSL_SUCCESS;
 }
 
@@ -630,5 +668,6 @@ int d2etaInit(double * d2eta, double r0, void * params)
     for(i=0; i<4*4*4*4; i++)
       d2eta[i] = -d2eta[i]/3. - d2eta2->data[i]/2.;
 
+    gsl_vector_free(d2eta2);
     return GSL_SUCCESS;
 }
