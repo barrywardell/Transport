@@ -35,7 +35,7 @@ int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   Gu(y, yp, gu, params);
 
   /* RHS */
-  gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, I, gu, 0., f);
+  gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1.0, gu, I, 0., f);
 
   gsl_matrix_free(gu);
 
