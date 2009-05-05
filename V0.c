@@ -116,7 +116,7 @@ int main (void)
   /* Use a Runge-Kutta integrator with adaptive step-size */
   const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
   gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
-  gsl_odeiv_control * c = gsl_odeiv_control_y_new (1e-8, 1e-8);
+  gsl_odeiv_control * c = gsl_odeiv_control_y_new (1e-12, 1e-12);
   gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
 
   /* Time-like geodesic starting at r=10M and going in to r=4M */
