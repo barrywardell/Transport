@@ -412,10 +412,17 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
-  gsl_vector_memcpy(f, d2eta);
-  gsl_vector_scale(f, 1./(tau+EPS));
+  gsl_vector_set_zero( f );
+
+  if(tau!=0.0)
+  {
+    gsl_vector_memcpy(f, d2eta);
+    gsl_vector_scale(f, 1./tau);
+  }
 
   /* FIXME: Riemann derivative term missing */
+  if(tau!=0.0)
+  {
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -434,8 +441,15 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                            - gsl_vector_get(d2eta, 64*i+16*m+4*k+l) * gsl_matrix_get(xi, m, j)
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+l) * gsl_matrix_get(xi, m, k)
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
-                           )/(tau+EPS)
-
+                           )/tau);
+  }
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+        for(l=0; l<4; l++)
+          for(m=0; m<4; m++)
+            gsl_vector_set(f, 64*i+16*j+4*k+l,
+                           gsl_vector_get(f, 64*i+16*j+4*k+l)
                            /* gu * d2eta */
                            + gsl_vector_get(d2eta, 64*i+16*m+4*k+l) * gsl_matrix_get(gu, m, j)
                            + gsl_vector_get(d2eta, 64*i+16*j+4*m+l) * gsl_matrix_get(gu, m, k)
@@ -576,6 +590,7 @@ int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, cons
 {
   int i;
   double rhs = 0.;
+
   if(tau!=0.)
   {
       for(i=0; i<4; i++)
@@ -592,13 +607,13 @@ int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, cons
 }
 
 /* Initial conditions */
-int d2IinvInit(double * d2xi, double r0, void * params)
+int d2IinvInit(double * d2Iinv, double r0, void * params)
 {
     int i;
     /* d2Iinv^{a'}_{  b' c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
-    Riemann(d2xi, r0, params);
+    Riemann(d2Iinv, r0, params);
     for(i=0; i<4*4*4*4; i++)
-      d2xi[i] *= -1./2.;
+      d2Iinv[i] *= -1./2.;
 
     return GSL_SUCCESS;
 }
@@ -619,8 +634,13 @@ int d2etaInit(double * d2eta, double r0, void * params)
     int i;
     /* d2xi^{a'}_{  b' c' d'} (0) = -2/3* R^{a'}_{  (c' | b' | d')}*/
     RiemannSym(d2eta, r0, params);
+
+    gsl_vector * d2eta2 = gsl_vector_calloc(4*4*4*4);
+
+    Riemann(d2eta2->data, r0, params);
+
     for(i=0; i<4*4*4*4; i++)
-      d2eta[i] *= -1./3.;
+      d2eta[i] = -d2eta[i]/3. - d2eta2->data[i]/2.;
 
     return GSL_SUCCESS;
 }

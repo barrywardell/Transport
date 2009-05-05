@@ -269,7 +269,7 @@ int main (void)
   while (tau < tau1)
   {
 //          fprintf(stderr,", %.5f", y[NUM_EQS-1]);
-    int status = gsl_odeiv_evolve_apply (e, NULL, s, &sys, &tau, tau1, &h, y);
+    int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
 //fprintf(stderr,", %.5f\n", y[NUM_EQS-1]);
     if (status != GSL_SUCCESS)
       break;
@@ -310,7 +310,7 @@ int main (void)
     }*/
 
     /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-13 || tau > 73.0)
+    if (h < 1e-13 || tau > 3.14)
     {
       fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
       break;
