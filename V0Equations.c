@@ -239,7 +239,7 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
       for(k=0; k<4; k++)
         for(l=0; l<4; l++)
           gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
-                         + gsl_matrix_get(eta, i, l)*gsl_vector_get(sigma_R, 16*l + 4*j + k));
+                         - gsl_matrix_get(eta, i, l)*gsl_vector_get(sigma_R, 16*l + 4*j + k));
 
   /* Christoffel terms */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
