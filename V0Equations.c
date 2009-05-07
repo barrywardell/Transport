@@ -118,7 +118,7 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
           for(j=0; j<4; j++)
               for(k=0; k<4; k++)
                   for(l=0; l<4; l++)
-                      gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(xi, l, i)/tau);
+                      gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(xi, l, k)/tau);
 
     gsl_matrix_free(xi);
   }
