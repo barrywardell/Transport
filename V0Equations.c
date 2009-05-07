@@ -62,8 +62,11 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
 
   /* RHS */
   gsl_matrix * eta_rhs = gsl_matrix_calloc(4,4);
-  gsl_matrix_memcpy(eta_rhs, eta);
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/(tau+EPS), eta, xi, 1.0/(tau+EPS), eta_rhs);
+  if(tau!=0.0)
+  {
+    gsl_matrix_memcpy(eta_rhs, eta);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/tau, eta, xi, 1.0/tau, eta_rhs);
+  }
   gsl_matrix_add(eta_rhs, eta_gu);
   gsl_matrix_memcpy(f, eta_rhs);
   
@@ -100,21 +103,25 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
         for(l=0; l<4; l++)
           gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) + gsl_vector_get(sigma_R, 16*j + 4*l +k)*gsl_matrix_get(I_inv, i, l));
 
-
-  /* And calculate dIinv * xi*/
-  gsl_matrix * xi = gsl_matrix_calloc(4,4);
-  gsl_matrix_memcpy(xi, q);
-
-  for( i=0; i<4; i++)
+  if(tau!=0.0)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
-  }
+      /* And calculate dIinv * xi*/
+      gsl_matrix * xi = gsl_matrix_calloc(4,4);
+      gsl_matrix_memcpy(xi, q);
 
-  for(i=0; i<4; i++)
-    for(j=0; j<4; j++)
-      for(k=0; k<4; k++)
-        for(l=0; l<4; l++)
-          gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(xi, l, i)/(tau+EPS));
+      for( i=0; i<4; i++)
+      {
+          gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
+      }
+
+      for(i=0; i<4; i++)
+          for(j=0; j<4; j++)
+              for(k=0; k<4; k++)
+                  for(l=0; l<4; l++)
+                      gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(xi, l, i)/tau);
+
+    gsl_matrix_free(xi);
+  }
 
   /* Christoffel terms */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
@@ -131,7 +138,6 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
   gsl_matrix_free(I_inv);
   gsl_matrix_free(lu);
   gsl_vector_free(sigma_R);
-  gsl_matrix_free(xi);
   gsl_matrix_free(gu);
 
   return GSL_SUCCESS;
@@ -150,21 +156,25 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
     gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
-  /* The first term on the RHS is just dxi/tau */
-  gsl_vector_memcpy(f, dxi);
-  gsl_vector_scale(f, 1./(tau+EPS));
+  gsl_vector_set_zero(f);
+  if(tau!=0.0){
+      /* The first term on the RHS is just dxi/tau */
+      gsl_vector_memcpy(f, dxi);
 
-  /* Now we  work out the three xi*dxi terms */
-  for(i=0; i<4; i++)
-    for(j=0; j<4; j++)
-      for(k=0; k<4; k++)
-        for(l=0; l<4; l++)
-          gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k) + (
-                         - gsl_matrix_get(xi, i, l)*gsl_vector_get(dxi, 16*l + 4*j + k)
-                         - gsl_matrix_get(xi, l, j)*gsl_vector_get(dxi, 16*i + 4*l + k)
-                         - gsl_matrix_get(xi, l, k)*gsl_vector_get(dxi, 16*i + 4*l + j))
-                         /(tau+EPS));
-  
+      /* Now we  work out the three xi*dxi terms */
+      for(i=0; i<4; i++)
+          for(j=0; j<4; j++)
+              for(k=0; k<4; k++)
+                  for(l=0; l<4; l++)
+                      gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
+                              - gsl_matrix_get(xi, i, l)*gsl_vector_get(dxi, 16*l + 4*j + k)
+                              - gsl_matrix_get(xi, l, j)*gsl_vector_get(dxi, 16*i + 4*l + k)
+                              - gsl_matrix_get(xi, l, k)*gsl_vector_get(dxi, 16*i + 4*l + j)
+                              );
+
+      gsl_vector_scale(f, 1./tau);
+  }
+
   /* And calculate sigma_R */
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
@@ -206,28 +216,35 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
 {
   int i, j, k, l;
   
-  /* First, we need xi from q */
-  gsl_matrix * xi = gsl_matrix_calloc(4,4);
-  gsl_matrix_memcpy(xi, q);
-  for( i=0; i<4; i++)
+  gsl_vector_set_zero(f);
+  if(tau!=0.0)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
+      /* First, we need xi from q */
+      gsl_matrix * xi = gsl_matrix_calloc(4,4);
+      gsl_matrix_memcpy(xi, q);
+      for( i=0; i<4; i++)
+      {
+          gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
+      }
+
+      /* The first term on the RHS is just deta/tau */
+      gsl_vector_memcpy(f, deta);
+
+      /* Now we  work out the two xi*deta terms and one eta dxi term*/
+      for(i=0; i<4; i++)
+          for(j=0; j<4; j++)
+              for(k=0; k<4; k++)
+                  for(l=0; l<4; l++)
+                      gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
+                              - gsl_matrix_get(xi, l, j)*gsl_vector_get(deta, 16*i + 4*l + k)
+                              - gsl_matrix_get(xi, l, k)*gsl_vector_get(deta, 16*i + 4*l + j)
+                              - gsl_matrix_get(eta, i, l)*gsl_vector_get(dxi, 16*l + 4*j + k)
+                              );
+
+      gsl_vector_scale(f, 1./tau);
+
+      gsl_matrix_free(xi);
   }
-
-  /* The first term on the RHS is just deta/tau */
-  gsl_vector_memcpy(f, deta);
-  gsl_vector_scale(f, 1./(tau+EPS));
-
-  /* Now we  work out the two xi*deta terms and one eta dxi term*/
-  for(i=0; i<4; i++)
-    for(j=0; j<4; j++)
-      for(k=0; k<4; k++)
-        for(l=0; l<4; l++)
-          gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)+(
-                         - gsl_matrix_get(xi, l, j)*gsl_vector_get(deta, 16*i + 4*l + k)
-                         - gsl_matrix_get(xi, l, k)*gsl_vector_get(deta, 16*i + 4*l + j)
-                         - gsl_matrix_get(eta, i, l)*gsl_vector_get(dxi, 16*l + 4*j + k)
-                         )/(tau+EPS));
 
   /* And calculate sigma_R */
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
@@ -254,7 +271,6 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                          + gsl_matrix_get(gu, l, k)*gsl_vector_get(deta, 16*i + 4*j + l));
 
   gsl_vector_free(sigma_R);
-  gsl_matrix_free(xi);
   gsl_matrix_free(gu);
 
   return GSL_SUCCESS;
