@@ -134,7 +134,7 @@ int main (void)
   /* Initial Conditions */
   double y[NUM_EQS] = {
     /* r, r', theta, phi, t */
-    r0, rp0, 0.0, 0.0, 0.0,
+    r0, rp0, M_PI_2, 0.0, 0.0,
 
     /* Q^a'_b' */
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
