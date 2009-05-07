@@ -249,8 +249,12 @@ int main (void)
 
   /* Calculate Box SqrtDelta */
   double box_sqrt_delta = 0;
+  boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
-    boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+  /* Calculate tr2 term */
+  double tr2 = 0;
+  tr2term (tau, y, &tr2, &params);
+
   /* Output the initial values */
   printf ("%.5f", tau);
   for(i=0; i<NUM_EQS; i++)
@@ -263,14 +267,13 @@ int main (void)
   printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
   printf(", %.5f", box_sqrt_delta);
   printf(", %.5f", y[NUM_EQS-1]);
+  printf(", %.5f", tr2);
   printf("\n");
 
   /* Solve system of ODEs */
   while (tau < tau1)
   {
-//          fprintf(stderr,", %.5f", y[NUM_EQS-1]);
     int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
-//fprintf(stderr,", %.5f\n", y[NUM_EQS-1]);
     if (status != GSL_SUCCESS)
       break;
 
@@ -281,6 +284,9 @@ int main (void)
 
     /* Calculate Box SqrtDelta */
     boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+
+    /* Calculate tr2 term */
+    tr2term (tau, y, &tr2, &params);
 
     /* Output the results */
     printf ("%.5f", tau);
@@ -294,6 +300,8 @@ int main (void)
     printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
     printf(", %.5f", box_sqrt_delta);
     printf(", %.5f", y[NUM_EQS-1]);
+    printf(", %.5f", tr2);
+    //printf(", %.5f", gsl_linalg_LU_det(lu, signum));
     printf("\n");
 
     /* Don't let the step size get bigger than 1 */
@@ -304,7 +312,7 @@ int main (void)
     }*/
 
     /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-13 || tau > 3.14)
+    if (h < 1e-13 || tau > 3.0)
     {
       fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
       break;

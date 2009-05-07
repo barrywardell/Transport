@@ -627,6 +627,71 @@ int boxSqrtDelta (double tau, const double * y, double * f, void * params)
   return GSL_SUCCESS;
 }
 
+/* tr2 term of Box SqrtDelta */
+int tr2term (double tau, const double * y, double * f, void * params)
+{
+  int i, j, k;
+  const double * I          = y+5+16+1;
+  const double * dI_Inv     = y+5+16+1+16+16;
+  const double * dEta       = y+5+16+1+16+16+64+64;
+  gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
+  gsl_matrix   * gamma      = gsl_matrix_calloc(4,4);
+  gsl_matrix   * metric     = gsl_matrix_calloc(4,4);
+
+  /* Compute gamma matrix */
+  gammaBitensor( &eta.matrix, gamma );
+
+  /* Compute metric (in primed coordinates) */
+  metric_up_up(y, metric, params);
+
+  /* Initialize the RHS to 0 */
+  *f = 0.;
+
+  /* The vector tr(I dI^-1) */
+  double trIdI_inv[4] = {0, 0, 0, 0};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+        trIdI_inv[i] += I[j*4+k]*dI_Inv[k*16+j*4+i];
+      }
+    }
+  }
+
+  /* The vector tr(gamma dEta^-1) */
+  double trGammadEta[4] = {0, 0, 0, 0};
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      for(k=0; k<4; k++)
+      {
+        trGammadEta[i] += gsl_matrix_get(gamma, j, k) * dEta[16*k+4*j+i];
+      }
+    }
+  }
+
+  /* Now contracting over the free index) */
+  double tr2 = 0.;
+  for(i=0; i<4; i++)
+  {
+    for(j=0; j<4; j++)
+    {
+      tr2 += (trIdI_inv[i]+trGammadEta[i])*(trIdI_inv[j]+trGammadEta[j])*gsl_matrix_get(metric,i,j);
+    }
+  }
+
+  /* We have everything we need, now just calculate Box SqrtDelta */
+  *(f) = tr2;
+
+  gsl_matrix_free(metric);
+  gsl_matrix_free(gamma);
+
+  return GSL_SUCCESS;
+}
+
 /* V0: D'V_0 = -V0 - 1/2 V_0 ( xi - 4 ) - 1/2 Box (Delta^1/2) */
 int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, const double * v0, double * f, void * params)
 {
