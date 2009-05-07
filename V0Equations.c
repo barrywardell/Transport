@@ -57,7 +57,7 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   
   for( i=0; i<4; i++)
   {
-    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1);
+    gsl_matrix_set(xi,i,i, gsl_matrix_get(xi,i,i) + 1.);
   }
 
   /* RHS */
