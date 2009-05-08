@@ -47,9 +47,10 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   int i;
   
   /* eta*Gu */
+  gsl_matrix * gu = gsl_matrix_calloc(4,4);
   gsl_matrix * eta_gu = gsl_matrix_calloc(4,4);
-  Gu(y, yp, eta_gu, params);
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, eta, eta_gu, 0., eta_gu);
+  Gu(y, yp, gu, params);
+  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, eta, gu, 0., eta_gu);
   
   /* Xi */
   gsl_matrix * xi = gsl_matrix_calloc(4,4);
@@ -65,11 +66,13 @@ int etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
   if(tau!=0.0)
   {
     gsl_matrix_memcpy(eta_rhs, eta);
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0/tau, eta, xi, 1.0/tau, eta_rhs);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, eta, xi, 1.0, eta_rhs);
+    gsl_matrix_scale(eta_rhs, 1.0/tau);
   }
   gsl_matrix_add(eta_rhs, eta_gu);
   gsl_matrix_memcpy(f, eta_rhs);
   
+  gsl_matrix_free(gu);
   gsl_matrix_free(eta_gu);
   gsl_matrix_free(xi);
   gsl_matrix_free(eta_rhs);
