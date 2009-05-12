@@ -87,12 +87,12 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
   /* Initialize all elements to 0 */
   gsl_vector_set_zero(r_sigma);
   
-  gsl_vector_set(r_sigma, 0*16 + 3*4 + 0, -(-1 + r * r) * ut);		// r,t,r
-  gsl_vector_set(r_sigma, 0*16 + 3*4 + 3, (-1 + r * r) * ur);		// r,t,t
+  gsl_vector_set(r_sigma, 0*16 + 3*4 + 0, -(-1. + r * r) * ut);	// r,t,r
+  gsl_vector_set(r_sigma, 0*16 + 3*4 + 3, (-1. + r * r) * ur);		// r,t,t
   gsl_vector_set(r_sigma, 1*16 + 2*4 + 1, -uph);			// theta,phi,theta
   gsl_vector_set(r_sigma, 2*16 + 1*4 + 1, uph);				// phi, theta, theta
-  gsl_vector_set(r_sigma, 3*16 + 0*4 + 0, -1. / (-1 + r * r) * ut);	// t,r,r
-  gsl_vector_set(r_sigma, 3*16 + 0*4 + 3, 1. / (-1 + r * r) * ur);	// t,r,t
+  gsl_vector_set(r_sigma, 3*16 + 0*4 + 0, -ut / (-1. + r * r) );	// t,r,r
+  gsl_vector_set(r_sigma, 3*16 + 0*4 + 3, ur / (-1. + r * r) );	// t,r,t
 
   return GSL_SUCCESS;
 }

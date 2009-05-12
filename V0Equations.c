@@ -85,7 +85,7 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
   int i, j, k, l;
 
   /* First, we need I^-1 */
-  int signum;
+  int signum=0;
   gsl_permutation * p = gsl_permutation_calloc (4);
   gsl_matrix * I_inv = gsl_matrix_calloc(4,4);
   gsl_matrix * lu = gsl_matrix_calloc(4,4);
