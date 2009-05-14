@@ -256,18 +256,18 @@ int main (void)
   tr2term (tau, y, &tr2, &params);
 
   /* Output the initial values */
-  printf ("%.5f", tau);
+  printf ("%.5e", tau);
   for(i=0; i<NUM_EQS; i++)
   {
-      printf (", %.5f", y[i]);
+      printf (", %.5e", y[i]);
   }
-  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
-  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-  printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-  printf(", %.5f", box_sqrt_delta);
-  printf(", %.5f", y[NUM_EQS-1]);
-  printf(", %.5f", tr2);
+  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
+  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
+  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
+  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+  printf(", %.5e", box_sqrt_delta);
+  printf(", %.5e", y[NUM_EQS-1]);
+  printf(", %.5e", tr2);
   printf("\n");
 
   /* Solve system of ODEs */
@@ -289,19 +289,19 @@ int main (void)
     tr2term (tau, y, &tr2, &params);
 
     /* Output the results */
-    printf ("%.5f", tau);
+    printf ("%.5e", tau);
     for(i=0; i<NUM_EQS; i++)
     {
-      printf (", %.5f", y[i]);
+      printf (", %.5e", y[i]);
     }
-    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
-    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-    printf (", %.5f, %.5f, %.5f, %.5f", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-    printf(", %.5f", box_sqrt_delta);
-    printf(", %.5f", y[NUM_EQS-1]);
-    printf(", %.5f", tr2);
-    //printf(", %.5f", gsl_linalg_LU_det(lu, signum));
+    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
+    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
+    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
+    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+    printf(", %.5e", box_sqrt_delta);
+    printf(", %.5e", y[NUM_EQS-1]);
+    printf(", %.5e", tr2);
+    //printf(", %.5e", gsl_linalg_LU_det(lu, signum));
     printf("\n");
 
     /* Don't let the step size get bigger than 1 */
