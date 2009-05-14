@@ -219,6 +219,10 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
 {
   int i, j, k, l;
   
+  /* Calculate sigma_R */
+  gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
+  R_sigma(y, yp, sigma_R, params);
+
   gsl_vector_set_zero(f);
   if(tau!=0.0)
   {
@@ -247,11 +251,20 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
       gsl_vector_scale(f, 1./tau);
 
       gsl_matrix_free(xi);
-  }
+  } else {
 
-  /* And calculate sigma_R */
-  gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
-  R_sigma(y, yp, sigma_R, params);
+    double ur = gsl_vector_get(yp,0);
+    double uph = gsl_vector_get(yp,3);
+    double ut = gsl_vector_get(yp,4);
+    double r = gsl_vector_get(y,0);
+
+    gsl_vector_set(f, 16*0 + 4*0 + 3,   ((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*0 + 4*3 + 0,  - ((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*1 + 4*1 + 2,   uph / 3.);
+    gsl_vector_set(f, 16*1 + 4*2 + 1,  - uph / 3.);
+    gsl_vector_set(f, 16*3 + 4*0 + 3,   (1 / (-1 + r * r) * ur) / 3.);
+    gsl_vector_set(f, 16*3 + 4*3 + 0,  - (1 / (-1 + r * r) * ur) / 3.);
+  }
 
   /* Now, calculate the sigma_R * eta term */
   for(i=0; i<4; i++)
