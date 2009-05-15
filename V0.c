@@ -312,7 +312,7 @@ int main (void)
     }*/
 
     /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-13 || tau > 3.0)
+    if (h < 1e-20 || tau > 3.0)
     {
       fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
       break;
