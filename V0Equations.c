@@ -124,6 +124,11 @@ int dIinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                       gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - gsl_vector_get(dIinv, 16*i + 4*j + l)*gsl_matrix_get(xi, l, k)/tau);
 
     gsl_matrix_free(xi);
+  } else {
+      for(i=0; i<4; i++)
+        for(j=0; j<4; j++)
+          for(k=0; k<4; k++)
+            gsl_vector_set(f, 16*i+4*j+k, gsl_vector_get(f, 16*i + 4*j + k) - 0.5 * gsl_vector_get(sigma_R, 16*j + 4*i + k));
   }
 
   /* Christoffel terms */
@@ -151,6 +156,10 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
 {
   int i, j, k, l;
   
+  /* And calculate sigma_R */
+  gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
+  R_sigma(y, yp, sigma_R, params);
+
   /* First, we need xi from q */
   gsl_matrix * xi = gsl_matrix_calloc(4,4);
   gsl_matrix_memcpy(xi, q);
@@ -176,11 +185,25 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
                               );
 
       gsl_vector_scale(f, 1./tau);
-  }
+  } else {
+    double ur = gsl_vector_get(yp,0);
+    double uph = gsl_vector_get(yp,3);
+    double ut = gsl_vector_get(yp,4);
+    double r = gsl_vector_get(y,0);
 
-  /* And calculate sigma_R */
-  gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
-  R_sigma(y, yp, sigma_R, params);
+    gsl_vector_set(f, 16*0 + 4*0 + 3,   ((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*0 + 4*3 + 0,  - ((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*1 + 4*1 + 2,   uph / 3.);
+    gsl_vector_set(f, 16*1 + 4*2 + 1,  - uph / 3.);
+    gsl_vector_set(f, 16*3 + 4*0 + 3,   (1 / (-1 + r * r) * ur) / 3.);
+    gsl_vector_set(f, 16*3 + 4*3 + 0,  - (1 / (-1 + r * r) * ur) / 3.);
+
+    for(i=0; i<4; i++)
+        for(j=0; j<4; j++)
+            for(k=0; k<4; k++)
+                gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
+                               -(2*gsl_vector_get(sigma_R, 16*i + 4*k + j)+gsl_vector_get(sigma_R, 16*i + 4*j + k)));
+    }
 
   /* Now, calculate the three sigma_R * xi terms 
      FIXME: Missing the Riemann derivative term */
@@ -258,12 +281,12 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
     double ut = gsl_vector_get(yp,4);
     double r = gsl_vector_get(y,0);
 
-    gsl_vector_set(f, 16*0 + 4*0 + 3,   ((-1. + r * r) * ut) / 3.);
-    gsl_vector_set(f, 16*0 + 4*3 + 0,  - ((-1. + r * r) * ut) / 3.);
-    gsl_vector_set(f, 16*1 + 4*1 + 2,   uph / 3.);
-    gsl_vector_set(f, 16*1 + 4*2 + 1,  - uph / 3.);
-    gsl_vector_set(f, 16*3 + 4*0 + 3,   (1 / (-1 + r * r) * ur) / 3.);
-    gsl_vector_set(f, 16*3 + 4*3 + 0,  - (1 / (-1 + r * r) * ur) / 3.);
+    gsl_vector_set(f, 16*0 + 4*0 + 3,   2*((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*0 + 4*3 + 0,  - 2*((-1. + r * r) * ut) / 3.);
+    gsl_vector_set(f, 16*1 + 4*1 + 2,   2*uph / 3.);
+    gsl_vector_set(f, 16*1 + 4*2 + 1,  - 2*uph / 3.);
+    gsl_vector_set(f, 16*3 + 4*0 + 3,   2*(1 / (-1 + r * r) * ur) / 3.);
+    gsl_vector_set(f, 16*3 + 4*3 + 0,  - 2*(1 / (-1 + r * r) * ur) / 3.);
   }
 
   /* Now, calculate the sigma_R * eta term */
