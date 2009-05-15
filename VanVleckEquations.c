@@ -21,8 +21,6 @@
 #include <gsl/gsl_linalg.h>
 #include "SpacetimeTensors.h"
 
-#define EPS	10e-20
-
 /* Right hand side of ODE's for q^a_b = \sigm^a_b - \delta^a_b */
 int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * q, gsl_matrix * f, void * params)
 {
@@ -42,9 +40,12 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   gsl_matrix * q2 = gsl_matrix_calloc(4,4);
   gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, q, q, 0, q2);
   
-  /* (Q^2 + Q)/tau */
-  gsl_matrix_add(q2, q);
-  gsl_matrix_scale(q2, 1/(tau+EPS));
+  if(tau!=0.0)
+  {
+      /* (Q^2 + Q)/tau */
+      gsl_matrix_add(q2, q);
+      gsl_matrix_scale(q2, 1.0/tau);
+  }
   
   /* tau * S */
   gsl_matrix * tau_S = gsl_matrix_calloc(4,4);
@@ -55,7 +56,8 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
   gsl_matrix_set_zero(f);
   gsl_matrix_add(f,q_gu);
   gsl_matrix_sub(f,gu_q);
-  gsl_matrix_sub(f, q2);
+  if(tau!=0.0)
+      gsl_matrix_sub(f, q2);
   gsl_matrix_sub(f,tau_S);
   
   /* The theta,theta component blows up as theta*cot(theta) and makes the numerical scheme break down.
@@ -74,15 +76,18 @@ int qRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_mat
 int sqrtDeltaRHS (double tau, const gsl_matrix * q, const double * sqrt_delta, double * f, void * params)
 {
   int i;
-  double rhs = 0;
+  double rhs = 0.0;
   
-  for(i=0; i<4; i++)
+  if(tau!=0.0)
   {
-    rhs -= gsl_matrix_get(q, i, i);
+      for(i=0; i<4; i++)
+      {
+          rhs -= gsl_matrix_get(q, i, i);
+      }
+
+      rhs = rhs * (*sqrt_delta) / 2.0 / tau;
   }
-  
-  rhs = rhs * (*sqrt_delta) / 2 / (tau + EPS);
-  
+
   *f = rhs;
   
   return GSL_SUCCESS;
