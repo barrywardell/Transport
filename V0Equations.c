@@ -265,18 +265,16 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
 
       gsl_matrix_free(xi);
   } else {
+    /* Calculate sigma_R_alt */
+    gsl_vector * sigma_R_alt = gsl_vector_calloc(4*4*4);
+    R_sigma_alt(y, yp, sigma_R_alt, params);
 
-    double ur = gsl_vector_get(yp,0);
-    double uph = gsl_vector_get(yp,3);
-    double ut = gsl_vector_get(yp,4);
-    double r = gsl_vector_get(y,0);
-
-    gsl_vector_set(f, 16*0 + 4*0 + 3,   2*((-1. + r * r) * ut) / 3.);
-    gsl_vector_set(f, 16*0 + 4*3 + 0,  - 2*((-1. + r * r) * ut) / 3.);
-    gsl_vector_set(f, 16*1 + 4*1 + 2,   2*uph / 3.);
-    gsl_vector_set(f, 16*1 + 4*2 + 1,  - 2*uph / 3.);
-    gsl_vector_set(f, 16*3 + 4*0 + 3,   2*(1 / (-1 + r * r) * ur) / 3.);
-    gsl_vector_set(f, 16*3 + 4*3 + 0,  - 2*(1 / (-1 + r * r) * ur) / 3.);
+    for(i=0; i<4; i++)
+        for(j=0; j<4; j++)
+            for(k=0; k<4; k++)
+                gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
+                                + 2.0 * gsl_vector_get(sigma_R_alt, 16*i + 4*j + k)/3.0
+                                );
   }
 
   /* Now, calculate the sigma_R * eta term */

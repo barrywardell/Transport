@@ -121,6 +121,26 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
   return GSL_SUCCESS;
 }
 
+/* Calculates the tensor Rsigma^a_{ b c} = R^a_{ d b c} u^d and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, void *params)
+{
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(r_sigma);
+
+  /* Now, set the non-zero elements */
+#warning "Warning, R_sigma_alt() not defined for Scwarzschild"
+
+  return GSL_SUCCESS;
+}
+
 /* Calculates the matrix Gu^a_b = \Gamma^a_{b c} u^c and fill the values into gu */
 int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *params)
 {

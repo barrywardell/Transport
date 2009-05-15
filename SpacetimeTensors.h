@@ -35,6 +35,9 @@ int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)
 /* The tensor Rsigma^a_{ b c} = R^a_{ b d c} u^d */
 int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector *r_sigma, void *params);
 
+/* The tensor Rsigma_alt^a_{ b c} = R^a_{ d b c} u^d */
+int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector *r_sigma, void *params);
+
 /* The matrix Gu^a_b = \Gamma^a_{b c} u^c */
 int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *params);
 
