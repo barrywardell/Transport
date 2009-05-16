@@ -273,7 +273,9 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
         for(j=0; j<4; j++)
             for(k=0; k<4; k++)
                 gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
-                                + 2.0 * gsl_vector_get(sigma_R_alt, 16*i + 4*j + k)/3.0
+                                - gsl_vector_get(sigma_R_alt, 16*i + 4*j + k)/2.0
+                                - (gsl_vector_get(sigma_R, 16*i + 4*j + k) +
+                                   gsl_vector_get(sigma_R, 16*i + 4*k + j))/6.0
                                 );
   }
 
