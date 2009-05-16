@@ -108,6 +108,9 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
 
     (void)params;
 
+    /* Initialize all elements to 0 */
+    gsl_vector_set_zero(r_sigma);
+
     gsl_vector_set(r_sigma, 16*0 + 4*0 + 3,   (-1. + r * r) * ut);
     gsl_vector_set(r_sigma, 16*0 + 4*3 + 0,  - (-1. + r * r) * ut);
     gsl_vector_set(r_sigma, 16*1 + 4*1 + 2,   uph);
