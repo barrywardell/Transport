@@ -340,20 +340,32 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                            + gsl_vector_get(d2Iinv, 64*i+16*j+4*k+m) * gsl_matrix_get(gu, m, l)
                            - gsl_vector_get(d2Iinv, 64*m+16*j+4*k+l) * gsl_matrix_get(gu, i, m)
 
-                           /* xi * d2I */
-                           - (
-                           + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+l) * gsl_matrix_get(xi, m, k)
-                           + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+k) * gsl_matrix_get(xi, m, l)
-
-                           /* dxi * dIinv */
-                           + gsl_vector_get(dIinv, 16*i+4*j+m) * gsl_vector_get(dxi, 16*m+4*k+l)
-                           )/(tau+EPS)
-
                            /* R_sigma * dIinv */
                            + gsl_vector_get(dIinv, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*j + 4*m + l)
                            + gsl_vector_get(dIinv, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*j + 4*m + k)
                            - gsl_vector_get(dIinv, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
                            );
+
+  if(tau!=0.0)
+  {
+      /* FIXME: Riemann derivative term missing */
+      for(i=0; i<4; i++)
+          for(j=0; j<4; j++)
+              for(k=0; k<4; k++)
+                  for(l=0; l<4; l++)
+                      for(m=0; m<4; m++)
+                          gsl_vector_set(f, 64*i+16*j+4*k+l, gsl_vector_get(f, 64*i+16*j+4*k+l)
+                                         /* xi * d2I */
+                                         - (
+                                                 + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+l) * gsl_matrix_get(xi, m, k)
+                                                 + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+k) * gsl_matrix_get(xi, m, l)
+
+                                                 /* dxi * dIinv */
+                                                 + gsl_vector_get(dIinv, 16*i+4*j+m) * gsl_vector_get(dxi, 16*m+4*k+l)
+                                                 )/tau);
+  } else {
+     /* FIXME: Riemann derivative term missing */
+  }
 
   gsl_vector_free(sigma_R);
   gsl_matrix_free(xi);
@@ -389,8 +401,12 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   gsl_vector * sigma_R = gsl_vector_calloc(4*4*4);
   R_sigma(y, yp, sigma_R, params);
 
+  gsl_vector_set_zero(f);
+
+  if(tau!=0.0)
+  {
   gsl_vector_memcpy(f, d2xi);
-  gsl_vector_scale(f, 1./(tau+EPS));
+  gsl_vector_scale(f, 1./tau);
 
   /* FIXME: Riemann derivative terms missing */
   for(i=0; i<4; i++)
@@ -413,7 +429,18 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                            - gsl_vector_get(d2xi, 64*i+16*m+4*k+l) * gsl_matrix_get(xi, m, j)
                            - gsl_vector_get(d2xi, 64*i+16*m+4*j+l) * gsl_matrix_get(xi, m, k)
                            - gsl_vector_get(d2xi, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
-                           )/(tau+EPS)
+                           )/tau
+                           );
+  }
+
+  /* FIXME: Riemann derivative terms missing */
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+        for(l=0; l<4; l++)
+          for(m=0; m<4; m++)
+            gsl_vector_set(f, 64*i+16*j+4*k+l,
+                           gsl_vector_get(f, 64*i+16*j+4*k+l)
 
                            /* gu * d2xi */
                            + gsl_vector_get(d2xi, 64*i+16*m+4*k+l) * gsl_matrix_get(gu, m, j)
@@ -422,7 +449,7 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                            - gsl_vector_get(d2xi, 64*m+16*j+4*k+l) * gsl_matrix_get(gu, i, m)
 
                            /* r_sigma * r_sigma */
-                          + (tau+EPS)*(
+                          + tau*(
                            + gsl_vector_get(sigma_R, 16*i+4*m+l)*gsl_vector_get(sigma_R, 16*m + 4*k + j)
                            + gsl_vector_get(sigma_R, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*m + 4*l + j)
                            + gsl_vector_get(sigma_R, 16*i+4*m+j)*gsl_vector_get(sigma_R, 16*m + 4*l + k)
@@ -490,8 +517,10 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
 
   gsl_vector_set_zero( f );
 
+  if(tau!=0.0)
+  {
   gsl_vector_memcpy(f, d2eta);
-  gsl_vector_scale(f, 1./(tau+EPS));
+  gsl_vector_scale(f, 1./tau);
 
   /* FIXME: Riemann derivative term missing */
   for(i=0; i<4; i++)
@@ -512,8 +541,16 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                            - gsl_vector_get(d2eta, 64*i+16*m+4*k+l) * gsl_matrix_get(xi, m, j)
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+l) * gsl_matrix_get(xi, m, k)
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
-                           )/(tau+EPS)
+                           )/tau);
+  }
 
+  for(i=0; i<4; i++)
+    for(j=0; j<4; j++)
+      for(k=0; k<4; k++)
+        for(l=0; l<4; l++)
+          for(m=0; m<4; m++)
+            gsl_vector_set(f, 64*i+16*j+4*k+l,
+                           gsl_vector_get(f, 64*i+16*j+4*k+l) +
                            /* gu * d2eta */
                            + gsl_vector_get(d2eta, 64*i+16*m+4*k+l) * gsl_matrix_get(gu, m, j)
                            + gsl_vector_get(d2eta, 64*i+16*j+4*m+l) * gsl_matrix_get(gu, m, k)
