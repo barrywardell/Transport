@@ -119,17 +119,17 @@ int main (void)
   gsl_odeiv_control * c = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
   gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
 
-  /* Time-like geodesic starting at r=10M and going in to r=4M */
-  struct geodesic_params params = {1,sqrt(15./16.),1.,0.};
-
-  gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
-
   double tau = 0.0, tau1 = 1000.0;
   double h = 1e-6;
   double r0 = 0.5;
   double m = 1.0;
   double xi=0;
   double rp0 = -sqrt(3./16.);
+
+  /* Time-like geodesic starting at r=10M and going in to r=4M */
+  struct geodesic_params params = {m, sqrt(15./16.), 1., 0.};
+
+  gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
   /* Initial Conditions */
   double y[NUM_EQS] = {
