@@ -364,7 +364,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                                                  + gsl_vector_get(dIinv, 16*i+4*j+m) * gsl_vector_get(dxi, 16*m+4*k+l)
                                                  )/tau);
   } else {
-     /* FIXME: Riemann derivative term missing */
+#warning "Initial value for d2Iinv derivative missing"
   }
 
   gsl_vector_free(sigma_R);
@@ -431,6 +431,8 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                            - gsl_vector_get(d2xi, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
                            )/tau
                            );
+  } else {
+#warning "Initial value for d2xi derivative missing"
   }
 
   /* FIXME: Riemann derivative terms missing */
@@ -542,6 +544,8 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+l) * gsl_matrix_get(xi, m, k)
                            - gsl_vector_get(d2eta, 64*i+16*m+4*j+k) * gsl_matrix_get(xi, m, l)
                            )/tau);
+  } else {
+#warning "Initial value for d2eta derivative missing"
   }
 
   for(i=0; i<4; i++)
@@ -774,6 +778,8 @@ int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, cons
       rhs = (rhs*(*v0)/2. - (*v0) - (*dal_sqrt_delta)/2.)/(tau);
 
       *f = rhs;
+  } else {
+#warning "Initial value for V0 derivative missing"
   }
 
   return GSL_SUCCESS;
