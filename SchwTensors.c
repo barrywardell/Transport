@@ -136,7 +136,24 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
   gsl_vector_set_zero(r_sigma);
 
   /* Now, set the non-zero elements */
-#warning "Warning, R_sigma_alt() not defined for Scwarzschild"
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 2, -m / r * uph);
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, 2 * (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m / r * uph);
+  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2 * (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -(int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, 2 * m / r * uph);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, -(-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, -2 * m / r * uph);
+  gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -(int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, -(-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, 2 * (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, m / r * uph);
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, -2 * (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 2, -m / r * uph);
 
   return GSL_SUCCESS;
 }
