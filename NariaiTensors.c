@@ -147,12 +147,12 @@ int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma
 
 /* Calculates the tensor d2Rsigma^a_{ b c d} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
    set theta=Pi/2 and uth=0. */
-int d2R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma, void *params)
+int d2R_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma2, void *params)
 {
   (void)params;
 
   /* Initialize all elements to 0 */
-  gsl_vector_set_zero(d2r_sigma);
+  gsl_vector_set_zero(d2r_sigma2);
 
   return GSL_SUCCESS;
 }
