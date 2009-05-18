@@ -374,7 +374,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
 
 int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix *q, const gsl_vector * dxi, const gsl_matrix * I, const gsl_vector * dIinv, const gsl_vector * d2xi, gsl_vector * f, void * params)
 {
-  int i, j, k, l, m, n, o;
+  int i, j, k, l, m;
 
   /* Christoffel terms */
   gsl_matrix * gu = gsl_matrix_calloc(4,4);
