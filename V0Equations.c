@@ -24,8 +24,6 @@
 #include <gsl/gsl_linalg.h>
 #include "SpacetimeTensors.h"
 
-#define EPS	10e-18
-
 /* Bivector of parallel displacement, g_{a'}^{~ a}. We use the defining equation
    g_{a' ~ ;b'}^{a} \sigma^{b'} = 0 */
 int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, gsl_matrix * f, void * params)
@@ -475,7 +473,7 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                gsl_vector_get(f, 64*i+16*j+4*k+l)
 
                                /* r_sigma * r_sigma */
-                               + (tau+EPS)*(
+                               + tau*(
                                + gsl_vector_get(sigma_R, 16*m+4*l+n)*gsl_vector_get(sigma_R, 16*o + 4*m + k)*gsl_matrix_get(metric, n, i)*gsl_matrix_get(metric_dn, o, j)
                                + gsl_vector_get(sigma_R, 16*m+4*k+n)*gsl_vector_get(sigma_R, 16*o + 4*m + l)*gsl_matrix_get(metric, n, i)*gsl_matrix_get(metric_dn, o, j)
                                )
