@@ -120,6 +120,54 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
 
     return GSL_SUCCESS;
 }
+/* Calculates the tensor dRsigma2^a_{ b c} = R^a_{ d b e ;c} u^{d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int dR_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma2, void *params)
+{
+  (void)params;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(dr_sigma2);
+
+  return GSL_SUCCESS;
+}
+
+/* Calculates the tensor dRsigma^a_{ b c} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma, void *params)
+{
+  (void)params;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(dr_sigma);
+
+  return GSL_SUCCESS;
+}
+
+
+/* Calculates the tensor d2Rsigma^a_{ b c d} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int d2R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma, void *params)
+{
+  (void)params;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(d2r_sigma);
+
+  return GSL_SUCCESS;
+}
 
 /* Calculates the matrix Gu^a_b = \Gamma^a_{b c} u^c and fill the values into gu */
 int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *params)

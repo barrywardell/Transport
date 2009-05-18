@@ -26,10 +26,10 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
   double m = p.m;
   double r = y[0];
   
-  gsl_matrix_set(metric,0,0,(r-2*m)/r);
+  gsl_matrix_set(metric,0,0,(r-2.0*m)/r);
   gsl_matrix_set(metric,1,1,1/gsl_pow_2(r));
   gsl_matrix_set(metric,2,2,1/gsl_pow_2(r));
-  gsl_matrix_set(metric,3,3,-r/(r-2*m));
+  gsl_matrix_set(metric,3,3,-r/(r-2.0*m));
   
   return GSL_SUCCESS;
 }
@@ -43,10 +43,10 @@ int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
   double m = p.m;
   double r = y[0];
 
-  gsl_matrix_set(metric,0,0,r/(r-2*m));
+  gsl_matrix_set(metric,0,0,r/(r-2.0*m));
   gsl_matrix_set(metric,1,1,gsl_pow_2(r));
   gsl_matrix_set(metric,2,2,gsl_pow_2(r));
-  gsl_matrix_set(metric,3,3,-(r-2*m)/r);
+  gsl_matrix_set(metric,3,3,-(r-2.0*m)/r);
 
   return GSL_SUCCESS;
 }
@@ -63,22 +63,22 @@ int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)
   double ut = gsl_vector_get(yp,4);
   double r = gsl_vector_get(y,0);
   
-  gsl_matrix_set(s,0,0,(m*(4*m*gsl_pow_int(ut,2) - 2*r*gsl_pow_int(ut,2) - gsl_pow_int(r,3)*(gsl_pow_int(up,2) + gsl_pow_int(uth,2))))/gsl_pow_int(r,4));
+  gsl_matrix_set(s,0,0,(m*(4.0*m*gsl_pow_int(ut,2) - 2.0*r*gsl_pow_int(ut,2) - gsl_pow_int(r,3)*(gsl_pow_int(up,2) + gsl_pow_int(uth,2))))/gsl_pow_int(r,4));
   gsl_matrix_set(s,0,1,(m*ur*uth)/r);
   gsl_matrix_set(s,0,2,(m*up*ur)/r);
-  gsl_matrix_set(s,0,3,(2*m*(-2*m + r)*ur*ut)/gsl_pow_int(r,4));
-  gsl_matrix_set(s,1,0,-((m*ur*uth)/((2*m - r)*gsl_pow_int(r,2))));
-  gsl_matrix_set(s,1,1,(m*gsl_pow_int(r,2)*(2*(2*m - r)*r*gsl_pow_int(up,2) + gsl_pow_int(ur,2)) - m*gsl_pow_int(-2*m + r,2)*gsl_pow_int(ut,2))/((2*m - r)*gsl_pow_int(r,4)));
-  gsl_matrix_set(s,1,2,(-2*m*up*uth)/r);
-  gsl_matrix_set(s,1,3,(m*(2*m - r)*ut*uth)/gsl_pow_int(r,4));
-  gsl_matrix_set(s,2,0,-((m*up*ur)/((2*m - r)*gsl_pow_int(r,2))));
-  gsl_matrix_set(s,2,1,(-2*m*up*uth)/r);
-  gsl_matrix_set(s,2,2,(m*(-4*gsl_pow_int(m,2)*gsl_pow_int(ut,2) + r*(4*m*gsl_pow_int(ut,2) + r*(gsl_pow_int(ur,2) - gsl_pow_int(ut,2) - 2*r*(-2*m + r)*gsl_pow_int(uth,2)))))/((2*m - r)*gsl_pow_int(r,4)));
-  gsl_matrix_set(s,2,3,(m*(2*m - r)*up*ut)/gsl_pow_int(r,4));
-  gsl_matrix_set(s,3,0,(2*m*ur*ut)/((2*m - r)*gsl_pow_int(r,2)));
+  gsl_matrix_set(s,0,3,(2.0*m*(-2.0*m + r)*ur*ut)/gsl_pow_int(r,4));
+  gsl_matrix_set(s,1,0,-((m*ur*uth)/((2.0*m - r)*gsl_pow_int(r,2))));
+  gsl_matrix_set(s,1,1,(m*gsl_pow_int(r,2)*(2.0*(2.0*m - r)*r*gsl_pow_int(up,2) + gsl_pow_int(ur,2)) - m*gsl_pow_int(-2.0*m + r,2)*gsl_pow_int(ut,2))/((2.0*m - r)*gsl_pow_int(r,4)));
+  gsl_matrix_set(s,1,2,(-2.0*m*up*uth)/r);
+  gsl_matrix_set(s,1,3,(m*(2.0*m - r)*ut*uth)/gsl_pow_int(r,4));
+  gsl_matrix_set(s,2,0,-((m*up*ur)/((2.0*m - r)*gsl_pow_int(r,2))));
+  gsl_matrix_set(s,2,1,(-2.0*m*up*uth)/r);
+  gsl_matrix_set(s,2,2,(m*(-4.0*gsl_pow_int(m,2)*gsl_pow_int(ut,2) + r*(4.0*m*gsl_pow_int(ut,2) + r*(gsl_pow_int(ur,2) - gsl_pow_int(ut,2) - 2.0*r*(-2.0*m + r)*gsl_pow_int(uth,2)))))/((2.0*m - r)*gsl_pow_int(r,4)));
+  gsl_matrix_set(s,2,3,(m*(2.0*m - r)*up*ut)/gsl_pow_int(r,4));
+  gsl_matrix_set(s,3,0,(2.0*m*ur*ut)/((2.0*m - r)*gsl_pow_int(r,2)));
   gsl_matrix_set(s,3,1,(m*ut*uth)/r);
   gsl_matrix_set(s,3,2,(m*up*ut)/r);
-  gsl_matrix_set(s,3,3,(m*(-2*gsl_pow_int(ur,2) + r*(-2*m + r)*(gsl_pow_int(up,2) + gsl_pow_int(uth,2))))/ ((2*m - r)*gsl_pow_int(r,2)));
+  gsl_matrix_set(s,3,3,(m*(-2.0*gsl_pow_int(ur,2) + r*(-2.0*m + r)*(gsl_pow_int(up,2) + gsl_pow_int(uth,2))))/ ((2.0*m - r)*gsl_pow_int(r,2)));
   
   return GSL_SUCCESS;
 }
@@ -102,18 +102,18 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
   gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -m*ur/r);
   gsl_vector_set(r_sigma, 16*0 + 4*0 + 2, m*uph/r);
   gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -m*ur/r);
-  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, -(2*(-r+2*m))*m*ut/gsl_pow_4(r));
-  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, (2*(-r+2*m))*m*ur/gsl_pow_4(r));
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, -2*m*uph/r);
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, (-r+2*m)*m*ut/gsl_pow_4(r));
-  gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m*uph/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, -m*ur/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, 2*m*uph/r);
-  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, (-r+2*m)*m*ut/gsl_pow_4(r));
-  gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, -(-r+2*m)*m*uph/gsl_pow_4(r));
-  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2*m*ut/(gsl_pow_2(r)*(-r+2*m)));
-  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, 2*m*ur/(gsl_pow_2(r)*(-r+2*m)));
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, -(2.0*(-r+2.0*m))*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, (2.0*(-r+2.0*m))*m*ur/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, -2.0*m*uph/r);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, (-r+2.0*m)*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m*uph/(gsl_pow_2(r)*(-r+2.0*m)));
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
+  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, 2.0*m*uph/r);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, (-r+2.0*m)*m*ut/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, -(-r+2.0*m)*m*uph/gsl_pow_4(r));
+  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2.0*m*ut/(gsl_pow_2(r)*(-r+2.0*m)));
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, 2.0*m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
   gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, -m*ut/r);
   gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, -m*ut/r);
   gsl_vector_set(r_sigma, 16*3 + 4*3 + 2, m*uph/r);
@@ -137,23 +137,237 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
 
   /* Now, set the non-zero elements */
   gsl_vector_set(r_sigma, 16*0 + 4*0 + 2, -m / r * uph);
-  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, 2 * (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
+  gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, 2.0 *(-r + 2.0 *m) * m * pow(r, -4.0) * ut);
   gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m / r * uph);
-  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2 * (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
-  gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -(int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, 2 * m / r * uph);
-  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, -(-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
-  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, -2 * m / r * uph);
-  gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
-  gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -(int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
-  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
-  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, -(-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
-  gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, (-r + 2 * m) * m * (int) pow((double) r, (double) (-4)) * ut);
-  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, 2 * (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2.0 *(-r + 2.0 *m) * m * pow(r, -4.0) * ut);
+  gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, 2.0 *m / r * uph);
+  gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, -(-r + 2.0 *m) * m * pow(r, -4.0) * ut);
+  gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, -2.0 *m / r * uph);
+  gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, (-r + 2.0 *m) * m * pow(r, -4.0) * ut);
+  gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
+  gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, -(-r + 2.0 *m) * m * pow(r, -4.0) * ut);
+  gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, (-r + 2.0 *m) * m * pow(r, -4.0) * ut);
+  gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, 2.0 *pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
   gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, m / r * uph);
-  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, -2 * (int) pow((double) r, (double) (-2)) * m / (-r + 2 * m) * ur);
+  gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, -2.0 *pow(r, -2.0) * m / (-r + 2.0 *m) * ur);
   gsl_vector_set(r_sigma, 16*3 + 4*3 + 2, -m / r * uph);
+
+  return GSL_SUCCESS;
+}
+
+/* Calculates the tensor dRsigma2^a_{ b c} = R^a_{ d b e ;c} u^{d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int dR_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma2, void *params)
+{
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(dr_sigma2);
+
+  gsl_vector_set(dr_sigma2, 16*0 + 4*0 + 0, -3.0 * m * (-uph * uph * pow(r, 3.0) - 2.0 * ut * ut * r + 4.0 * ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(dr_sigma2, 16*0 + 4*1 + 1, -3.0 * m * (-r + 2.0 * m) * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 * ut * ut * m) * pow(r, -4.0));
+  gsl_vector_set(dr_sigma2, 16*0 + 4*2 + 0, -3.0 * m * pow(r, -2.0) * ur * uph);
+  gsl_vector_set(dr_sigma2, 16*0 + 4*2 + 2, -3.0 * pow(-r + 2.0 * m, 2.0) * pow(r, -4.0) * m * ut * ut);
+  gsl_vector_set(dr_sigma2, 16*0 + 4*3 + 0, 6.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut * ur);
+  gsl_vector_set(dr_sigma2, 16*0 + 4*3 + 2, 3.0 * pow(-r + 2.0 * m, 2.0) * pow(r, -4.0) * m * ut * uph);
+  gsl_vector_set(dr_sigma2, 16*1 + 4*0 + 1, 3.0 * m * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 * ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(dr_sigma2, 16*1 + 4*1 + 0, 3.0 * m * (-ur * ur * r * r + 2.0 * uph * uph * pow(r, 4.0) - 4.0 * m * uph * uph * pow(r, 3.0) + ut * ut * r * r - 4.0 * ut * ut * m * r + 4.0 * ut * ut * m * m) * pow(r, -5.0) / (-r + 2.0 * m));
+  gsl_vector_set(dr_sigma2, 16*1 + 4*1 + 2, -6.0 * m * pow(r, -2.0) * ur * uph);
+  gsl_vector_set(dr_sigma2, 16*1 + 4*2 + 1, 3.0 * m * pow(r, -2.0) * ur * uph);
+  gsl_vector_set(dr_sigma2, 16*1 + 4*3 + 1, -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut * ur);
+  gsl_vector_set(dr_sigma2, 16*2 + 4*0 + 0, 3.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ur * uph);
+  gsl_vector_set(dr_sigma2, 16*2 + 4*0 + 2, 3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut * ut);
+  gsl_vector_set(dr_sigma2, 16*2 + 4*1 + 1, 3.0 * m * pow(r, -2.0) * ur * uph);
+  gsl_vector_set(dr_sigma2, 16*2 + 4*2 + 0, 3.0 * m * (-ur * ur * r * r + ut * ut * r * r - 4.0 * ut * ut * m * r + 4.0 * ut * ut * m * m) * pow(r, -5.0) / (-r + 2.0 * m));
+  gsl_vector_set(dr_sigma2, 16*2 + 4*3 + 0, -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(dr_sigma2, 16*2 + 4*3 + 2, -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut * ur);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*0 + 0, -6.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ur * ut);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*0 + 2, -3.0 * m * pow(r, -2.0) * uph * ut);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*1 + 1, -3.0 * m * pow(r, -2.0) * ur * ut);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*2 + 0, -3.0 * m * pow(r, -2.0) * uph * ut);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*2 + 2, -3.0 * m * pow(r, -2.0) * ur * ut);
+  gsl_vector_set(dr_sigma2, 16*3 + 4*3 + 0, 3.0 * m * (2.0 * ur * ur - uph * uph * r * r + 2.0 * uph * uph * r * m) * pow(r, -3.0) / (-r + 2.0 * m));
+  gsl_vector_set(dr_sigma2, 16*3 + 4*3 + 2, 6.0 * m * pow(r, -2.0) * ur * uph);
+
+  return GSL_SUCCESS;
+}
+
+/* Calculates the tensor dRsigma^a_{ b c} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma, void *params)
+{
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(dr_sigma);
+
+  gsl_vector_set(dr_sigma, 64*0 + 16*1 + 4*1 + 0,  3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*0 + 16*1 + 4*1 + 2,  3.0 * m / r * (-r + 2.0 * m) * uph);
+  gsl_vector_set(dr_sigma, 64*0 + 16*2 + 4*0 + 0,  -3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*0 + 16*2 + 4*1 + 1,  -3.0 * m / r * (-r + 2.0 * m) * uph);
+  gsl_vector_set(dr_sigma, 64*0 + 16*2 + 4*2 + 0,  3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*0 + 16*3 + 4*0 + 0,  6.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*0 + 16*3 + 4*1 + 1,  3.0 * pow(-r + 2.0 * m, 2.0) * pow(r, -4.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*0 + 16*3 + 4*2 + 2,  3.0 * pow(-r + 2.0 * m, 2.0) * pow(r, -4.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*0 + 16*3 + 4*3 + 0,  -6.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ur);
+  gsl_vector_set(dr_sigma, 64*0 + 16*3 + 4*3 + 2,  -3.0 * pow(-r + 2.0 * m, 2.0) * pow(r, -4.0) * m * uph);
+  gsl_vector_set(dr_sigma, 64*1 + 16*0 + 4*1 + 0,  3.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ur);
+  gsl_vector_set(dr_sigma, 64*1 + 16*0 + 4*1 + 2,  3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*1 + 16*2 + 4*0 + 1,  3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*1 + 16*2 + 4*1 + 0,  6.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*1 + 16*2 + 4*1 + 2,  3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*1 + 16*2 + 4*2 + 1,  -3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*1 + 16*3 + 4*0 + 1,  -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*1 + 16*3 + 4*1 + 0,  -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*1 + 16*3 + 4*3 + 1,  3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ur);
+  gsl_vector_set(dr_sigma, 64*2 + 16*0 + 4*0 + 0,  -3.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * uph);
+  gsl_vector_set(dr_sigma, 64*2 + 16*0 + 4*1 + 1,  -3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*2 + 16*0 + 4*2 + 0,  3.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ur);
+  gsl_vector_set(dr_sigma, 64*2 + 16*1 + 4*0 + 1,  -3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*2 + 16*1 + 4*1 + 0,  -6.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*2 + 16*1 + 4*1 + 2,  -3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*2 + 16*1 + 4*2 + 1,  3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*2 + 16*3 + 4*0 + 2,  -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*2 + 16*3 + 4*2 + 0,  -3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ut);
+  gsl_vector_set(dr_sigma, 64*2 + 16*3 + 4*3 + 0,  3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * uph);
+  gsl_vector_set(dr_sigma, 64*2 + 16*3 + 4*3 + 2,  3.0 * (-r + 2.0 * m) * pow(r, -5.0) * m * ur);
+  gsl_vector_set(dr_sigma, 64*3 + 16*0 + 4*0 + 0,  6.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*0 + 4*1 + 1,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*0 + 4*2 + 2,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*0 + 4*3 + 0,  -6.0 * pow(r, -3.0) / (-r + 2.0 * m) * m * ur);
+  gsl_vector_set(dr_sigma, 64*3 + 16*0 + 4*3 + 2,  -3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*3 + 16*1 + 4*0 + 1,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*1 + 4*1 + 0,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*1 + 4*3 + 1,  -3.0 * m * pow(r, -2.0) * ur);
+  gsl_vector_set(dr_sigma, 64*3 + 16*2 + 4*0 + 2,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*2 + 4*2 + 0,  3.0 * m * pow(r, -2.0) * ut);
+  gsl_vector_set(dr_sigma, 64*3 + 16*2 + 4*3 + 0,  -3.0 * m * pow(r, -2.0) * uph);
+  gsl_vector_set(dr_sigma, 64*3 + 16*2 + 4*3 + 2,  -3.0 * m * pow(r, -2.0) * ur);
+
+  return GSL_SUCCESS;
+}
+
+
+/* Calculates the tensor d2Rsigma^a_{ b c d} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
+   set theta=Pi/2 and uth=0. */
+int d2R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma, void *params)
+{
+  struct geodesic_params p = *(struct geodesic_params *)params;
+  double m = p.m;
+  double ur = gsl_vector_get(yp,0);
+  double uph = gsl_vector_get(yp,3);
+  double ut = gsl_vector_get(yp,4);
+  double r = gsl_vector_get(y,0);
+
+  /* Initialize all elements to 0 */
+  gsl_vector_set_zero(d2r_sigma);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*0 + 4*0 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * (-uph * uph * pow(r, 3.0) - 2.0 *ut * ut * r + 4.0 *ut * ut * m) * pow(r, -6.0) / (-r + 2.0 *m));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*0 + 4*1 + 1,  3.0 *m * (-r + 2.0 *m) * (-3.0 *uph * uph * pow(r, 3.0) - 4.0 *ut * ut * r + 8.0 *ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*0 + 4*2 + 2,  3.0 *m * (-r + 2.0 *m) * (-uph * uph * pow(r, 3.0) - 4.0 *ut * ut * r + 8.0 *ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*0 + 4*2 + 3,  6.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*0 + 4*3 + 3,  -3.0 *(-r + 2.0 *m) * m * m * (-uph * uph * pow(r, 3.0) - 2.0 *ut * ut * r + 4.0 *ut * ut * m) * pow(r, -8.0));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*1 + 4*0 + 1,  12.0 *m * (-r + 2.0 *m) * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 *ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*1 + 4*1 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 *ut * ut * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*0 + 16*1 + 4*1 + 2,  -3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*1 + 4*1 + 3,  -3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*1 + 4*2 + 1,  -3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*0 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*0 + 2,  12.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * ut);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*1 + 1,  9.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*2 + 0,  3.0 *m * (-r + 2.0 *m) * (-4.0 *r + 9.0 *m) * pow(r, -5.0) * ut * ut);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*2 + 2,  3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*2 + 3,  -3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*2 + 4*3 + 3,  -3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*0 + 0,  -6.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -6.0) * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*0 + 2,  -12.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*1 + 1,  -12.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*2 + 0,  -3.0 *m * (-r + 2.0 *m) * (-4.0 *r + 9.0 *m) * pow(r, -5.0) * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*2 + 2,  -12.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*2 + 3,  -3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * uph * ur);
+  gsl_vector_set(d2r_sigma, 64*0 + 16*3 + 4*3 + 3,  6.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -8.0) * m * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*0 + 4*0 + 1,  -12.0 *m * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 *ut * ut * m) * pow(r, -6.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*0 + 4*1 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * (-uph * uph * pow(r, 3.0) - ut * ut * r + 2.0 *ut * ut * m) * pow(r, -6.0) / (-r + 2.0 *m));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*0 + 4*1 + 2,  3.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*0 + 4*1 + 3,  3.0 *pow(r, -6.0) * m * m * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*0 + 4*2 + 1,  3.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*0 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * (-ur * ur * r * r + 2.0 *uph * uph * pow(r, 4.0) - 4.0 *m * uph * uph * pow(r, 3.0) + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -6.0) * pow((-r + 2.0 *m), -2.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*0 + 2,  24.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*1 + 1,  -3.0 *m * (-ur * ur * r * r + 4.0 *uph * uph * pow(r, 4.0) - 8.0 *m * uph * uph * pow(r, 3.0) + 3.0 *ut * ut * r * r - 12.0 *ut * ut * m * r + 12.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*2 + 0,  6.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*2 + 2,  -3.0 *m * (-3.0 *ur * ur * r * r + 4.0 *uph * uph * pow(r, 4.0) - 8.0 *m * uph * uph * pow(r, 3.0) + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*2 + 3,  -6.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*1 + 4*3 + 3,  3.0 *m * m * (-ur * ur * r * r + 2.0 *uph * uph * pow(r, 4.0) - 4.0 *m * uph * uph * pow(r, 3.0) + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -8.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*2 + 4*0 + 1,  -12.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*2 + 4*1 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*2 + 4*1 + 2,  -3.0 *m * (ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*2 + 4*1 + 3,  3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*2 + 4*2 + 1,  -3.0 *m * (ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*3 + 4*0 + 1,  12.0 *(-r + 2.0 *m) * pow(r, -6.0) * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*3 + 4*1 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -6.0) * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*3 + 4*1 + 2,  3.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*1 + 16*3 + 4*1 + 3,  -3.0 *m * m * (ur * ur - uph * uph * r * r + 2.0 *uph * uph * r * m) * pow(r, -6.0));
+  gsl_vector_set(d2r_sigma, 64*1 + 16*3 + 4*2 + 1,  3.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*0 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -4.0) * pow((-r + 2.0 *m), -2.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*0 + 2,  -12.0 *(-r + 2.0 *m) * pow(r, -6.0) * m * ut * ut);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*1 + 1,  -9.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*2 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -6.0) * ut * ut);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*2 + 2,  -3.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*2 + 3,  3.0 *pow(r, -6.0) * m * m * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*0 + 4*3 + 3,  3.0 *pow(r, -6.0) * m * m * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*1 + 4*0 + 1,  -12.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*1 + 4*1 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*1 + 4*1 + 2,  -3.0 *m * (ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*1 + 4*1 + 3,  3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*1 + 4*2 + 1,  -3.0 *m * (ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*2 + 4*0 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * (-ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -6.0) * pow((-r + 2.0 *m), -2.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*2 + 4*1 + 1,  -3.0 *m * (-3.0 *ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*2 + 4*2 + 2,  -3.0 *m * (-ur * ur * r * r + 3.0 *ut * ut * r * r - 12.0 *ut * ut * m * r + 12.0 *ut * ut * m * m) * pow(r, -5.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*2 + 4*3 + 3,  3.0 *m * m * (-ur * ur * r * r + ut * ut * r * r - 4.0 *ut * ut * m * r + 4.0 *ut * ut * m * m) * pow(r, -8.0));
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*0 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -6.0) * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*0 + 2,  12.0 *(-r + 2.0 *m) * pow(r, -6.0) * m * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*1 + 1,  3.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*2 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -6.0) * ut * ur);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*2 + 2,  9.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -5.0) * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*2 + 3,  -3.0 *pow(r, -6.0) * m * m * ur * ur);
+  gsl_vector_set(d2r_sigma, 64*2 + 16*3 + 4*3 + 3,  -3.0 *pow((-r + 2.0 *m), 2.0) * pow(r, -8.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*0 + 0,  6.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -4.0) * pow((-r + 2.0 *m), -2.0) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*0 + 2,  12.0 *m * pow(r, -3.0) * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*1 + 1,  12.0 *m * pow(r, -3.0) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*2 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*2 + 2,  12.0 *m * pow(r, -3.0) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*2 + 3,  3.0 *m * m * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*0 + 4*3 + 3,  -6.0 *pow(r, -6.0) * m * m * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*1 + 4*0 + 1,  12.0 *m * pow(r, -3.0) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*1 + 4*1 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*1 + 4*1 + 2,  3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*1 + 4*1 + 3,  -3.0 *m * m * (ur * ur - uph * uph * r * r + 2.0 *uph * uph * r * m) * pow(r, -3.0) / (-r + 2.0 *m));
+  gsl_vector_set(d2r_sigma, 64*3 + 16*1 + 4*2 + 1,  3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*0 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*0 + 2,  12.0 *m * pow(r, -3.0) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*1 + 1,  3.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*2 + 0,  3.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*2 + 2,  9.0 *(-r + 2.0 *m) * pow(r, -2.0) * m * uph * ut);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*2 + 3,  -3.0 *m * m * pow(r, -3.0) / (-r + 2.0 *m) * ur * ur);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*2 + 4*3 + 3,  -3.0 *(-r + 2.0 *m) * pow(r, -5.0) * m * m * ut * uph);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*0 + 0,  -3.0 *m * (-4.0 *r + 9.0 *m) * (2.0 *ur * ur - uph * uph * r * r + 2.0 *uph * uph * r * m) * pow(r, -4.0) * pow((-r + 2.0 *m), -2.0));
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*0 + 2,  -24.0 *m * pow(r, -3.0) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*1 + 1,  -3.0 *m * (4.0 *ur * ur - uph * uph * r * r + 2.0 *uph * uph * r * m) * pow(r, -3.0));
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*2 + 0,  -6.0 *m * (-4.0 *r + 9.0 *m) * pow(r, -3.0) / (-r + 2.0 *m) * ur * uph);
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*2 + 2,  -3.0 *m * (4.0 *ur * ur - 3.0 *uph * uph * r * r + 6.0 *uph * uph * r * m) * pow(r, -3.0));
+  gsl_vector_set(d2r_sigma, 64*3 + 16*3 + 4*3 + 3,  3.0 *m * m * (2.0 *ur * ur - uph * uph * r * r + 2.0 *uph * uph * r * m) * pow(r, -6.0));
 
   return GSL_SUCCESS;
 }
