@@ -104,7 +104,7 @@ int func (double tau, const double y[], double f[], void *params)
   boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
   /* Calculate V0 */
-  V0RHS (tau, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
+  V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
 
   return GSL_SUCCESS;
 }
@@ -119,6 +119,7 @@ int main (void)
   gsl_odeiv_control * c = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
   gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
 
+#ifdef NARIAI
   double tau = 0.0, tau1 = 1000.0;
   double h = 1e-6;
   double r0 = 0.5;
@@ -128,6 +129,17 @@ int main (void)
 
   /* Time-like geodesic starting at r=10M and going in to r=4M */
   struct geodesic_params params = {m, sqrt(15./16.), 1., 0.};
+#else
+  double tau = 0.0, tau1 = 1000.0;
+  double h = 1e-6;
+  double r0 = 10.0;
+  double m = 1.0;
+  double xi=0;
+  double rp0 = -0.706400680146914355432568986948418;
+
+  /* Time-like geodesic starting at r=10M and going in to r=4M */
+  struct geodesic_params params = {m, 4.0/5.0, 4.198185308677679, 0.};
+#endif
 
   gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
