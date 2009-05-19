@@ -804,11 +804,19 @@ int V0RHS (double tau, const gsl_matrix * q, const double * dal_sqrt_delta, cons
 /* Initial conditions */
 int d2IinvInit(double * d2Iinv, double r0, void * params)
 {
-    int i;
-    /* d2Iinv^{a'}_{  b' c' d'} (0) = 1/2* R^{a'}_{  b'  c'  d'}*/
+    int i, j, k, l;
+
+    gsl_vector * R = gsl_vector_calloc(4*4*4*4);
+    gsl_vector_set_zero(R);
+    Riemann(R->data, r0, params);
+
+    /* d2Iinv^{~ b'}_{a' ~ c' d'} (0) = -1/2* R^{a'}_{  b'  c'  d'}*/
     Riemann(d2Iinv, r0, params);
-    for(i=0; i<4*4*4*4; i++)
-      d2Iinv[i] *= 1./2.;
+    for(i=0; i<4; i++)
+      for(j=0; j<4; j++)
+        for(k=0; k<4; k++)
+          for(l=0; l<4; l++)
+            d2Iinv[64*i+16*j+4*k+l] = -gsl_vector_get(R, 64*j + 16*i + 4*k + l)/2.;
 
     return GSL_SUCCESS;
 }
