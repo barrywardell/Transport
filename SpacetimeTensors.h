@@ -64,4 +64,8 @@ int RiemannSym(double * R, double r0, void * params);
 
 /* Ricci Scalar */
 double RicciScalar();
+
+/* Covariant derivative of Ricci scalar contracted with 4-velocity*/
+double d_RicciScalar (const gsl_vector * y, const gsl_vector * yp, void *params);
+
 #endif

@@ -234,3 +234,10 @@ double RicciScalar()
 {
     return 4.;
 }
+
+/* Covariant derivative of Ricci scalar contracted with 4-velocity */
+double d_RicciScalar (const gsl_vector * y, const gsl_vector * yp, void *params)
+{
+    return 0;
+}
+

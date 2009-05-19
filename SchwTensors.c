@@ -260,8 +260,7 @@ int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma
   return GSL_SUCCESS;
 }
 
-
-/* Calculates the tensor d2Rsigma^a_{ b c d} = R^a_{ b e c;d} u^{e} and fill the values into r_sigma. Note that we have already
+/* Calculates the tensor d2Rsigma2^a_{ b c d} = R^a_{ e b f ;c d} u^{e} u^{f} and fill the values into r_sigma. Note that we have already
    set theta=Pi/2 and uth=0. */
 int d2R_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma2, void *params)
 {
@@ -517,3 +516,11 @@ double RicciScalar()
 {
     return 0;
 }
+
+/* Covariant derivative of Ricci scalar contracted with 4-velocity */
+double d_RicciScalar (const gsl_vector * y, const gsl_vector * yp, void *params)
+{
+
+    return GSL_SUCCESS;
+}
+
