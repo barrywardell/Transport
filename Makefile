@@ -19,7 +19,7 @@ VanVleckSchw: VanVleck.c SchwTensors.c VanVleckEquations.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ VanVleck.c SchwTensors.c VanVleckEquations.c
 
 V0Nariai: V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
+	$(CC) -D NARIAI $(CFLAGS) $(LDFLAGS) -o $@ V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
 
 V0Schw: V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
@@ -32,4 +32,4 @@ clean:
 
 fullclean: clean
 	rm -f *.csv
-  
+
