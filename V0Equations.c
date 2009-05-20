@@ -438,7 +438,6 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
   gsl_vector_memcpy(f, d2xi);
   gsl_vector_scale(f, 1./tau);
 
-  /* FIXME: Riemann derivative terms missing */
   for(i=0; i<4; i++)
     for(j=0; j<4; j++)
       for(k=0; k<4; k++)
@@ -582,17 +581,12 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
         for(k=0; k<4; k++)
           for(l=0; l<4; l++)
             gsl_vector_set(f, 64*i+16*j+4*k+l, gsl_vector_get(f, 64*i+16*j+4*k+l)
-                           -( gsl_vector_get(sigma_dR, 64*i + 16*j + 4*k + l)
-                            + gsl_vector_get(sigma_dR, 64*i + 16*k + 4*j + l)
-                            - gsl_vector_get(sigma_dR, 64*i + 16*j + 4*l + k)
-                            - gsl_vector_get(sigma_dR, 64*i + 16*k + 4*j + k))/6.0
-                           +3.0*( gsl_vector_get(sigma_dR, 64*i + 16*l + 4*j + k)
-                            - gsl_vector_get(sigma_dR, 64*i + 16*j + 4*l + k))/4.0
-                           +7.0*(gsl_vector_get(sigma_dR, 64*i + 16*k + 4*j + l)
-                            - gsl_vector_get(sigma_dR, 64*i + 16*j + 4*k + l))/12.0
-                           +  gsl_vector_get(sigma_dR, 64*i + 16*j + 4*k + l)/6.0
-                           +3.0*(gsl_vector_get(sigma_dR, 64*i + 16*l + 4*k + j)
-                            - gsl_vector_get(sigma_dR, 64*i + 16*k + 4*l + j))/4.0
+                           +( gsl_vector_get(sigma_dR, 64*i + 16*k + 4*l + j)
+                            + gsl_vector_get(sigma_dR, 64*i + 16*l + 4*k + j))/4.0
+                           -5.0*( gsl_vector_get(sigma_dR, 64*i + 16*j + 4*k + l)
+                            + gsl_vector_get(sigma_dR, 64*i + 16*j + 4*l + k))/12.0
+                           +7.0*(gsl_vector_get(sigma_dR, 64*i + 16*l + 4*j + k)
+                            + gsl_vector_get(sigma_dR, 64*i + 16*k + 4*j + l))/12.0
                           );
   }
 
@@ -848,7 +842,6 @@ int d2IinvInit(double * d2Iinv, double r0, void * params)
     Riemann(R->data, r0, params);
 
     /* d2Iinv^{~ b'}_{a' ~ c' d'} (0) = -1/2* R^{b'}_{  a'  c'  d'}*/
-    Riemann(d2Iinv, r0, params);
     for(i=0; i<4; i++)
       for(j=0; j<4; j++)
         for(k=0; k<4; k++)
