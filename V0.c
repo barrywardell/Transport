@@ -116,7 +116,7 @@ int main (void)
     /* Use a Runge-Kutta integrator with adaptive step-size */
     const gsl_odeiv_step_type * step_type = gsl_odeiv_step_rkf45;
     gsl_odeiv_step * step = gsl_odeiv_step_alloc (step_type, NUM_EQS);
-    gsl_odeiv_control * control = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
+    gsl_odeiv_control * control = gsl_odeiv_control_standard_new (1e-12, 1e-12, 1.0, 1.0);
     gsl_odeiv_evolve * evolve = gsl_odeiv_evolve_alloc (NUM_EQS);
 
     /* Start at tau=0 and integrate to tau=1000 */
@@ -323,10 +323,10 @@ int main (void)
         printf(", %.5e", tr2);
         printf("\n");
 
-        /* Exit if step size get smaller than 10^-12 */
-        if (h < 1e-12)
+        /* Exit if step size get smaller than 10^-20 */
+        if (h < 1e-20)
         {
-            fprintf(stderr,"Error: step size %e less than 1e-12 is not allowed.\n",h);
+            fprintf(stderr,"Error: step size %e less than 1e-20 is not allowed.\n",h);
             break;
         }
     }
