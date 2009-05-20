@@ -28,283 +28,250 @@
 /* RHS of our system of ODEs */
 int func (double tau, const double y[], double f[], void *params)
 {
-  /* Geodesic equations: 5 coupled equations for r,r',theta,phi,t */
-  gsl_vector_view geodesic_eqs = gsl_vector_view_array(f,5);
-  gsl_vector_const_view geodesic_coords = gsl_vector_const_view_array(y,5);
-  geodesicRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, params);
+    /* Geodesic equations: 5 coupled equations for r,r',theta,phi,t */
+    gsl_vector_view geodesic_eqs = gsl_vector_view_array(f,5);
+    gsl_vector_const_view geodesic_coords = gsl_vector_const_view_array(y,5);
+    geodesicRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, params);
 
-  /* Equations for Q^a_b */
-  gsl_matrix_view q_eqs = gsl_matrix_view_array(f+5,4,4);
-  gsl_matrix_const_view q_vals = gsl_matrix_const_view_array(y+5,4,4);
-  qRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &q_eqs.matrix, params);
+    /* Equations for Q^a_b */
+    gsl_matrix_view q_eqs = gsl_matrix_view_array(f+5,4,4);
+    gsl_matrix_const_view q_vals = gsl_matrix_const_view_array(y+5,4,4);
+    qRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &q_eqs.matrix, params);
 
-  /* Equation for Delta^1/2 */
-  sqrtDeltaRHS(tau, &q_vals.matrix, &y[5+16], &f[5+16], params);
+    /* Equation for Delta^1/2 */
+    sqrtDeltaRHS(tau, &q_vals.matrix, &y[5+16], &f[5+16], params);
 
-  /* Equation for I */
-  gsl_matrix_view I_eqs = gsl_matrix_view_array(f+5+16+1,4,4);
-  gsl_matrix_const_view I_vals = gsl_matrix_const_view_array(y+5+16+1,4,4);
-  IRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &I_eqs.matrix, params);
+    /* Equation for I */
+    gsl_matrix_view I_eqs = gsl_matrix_view_array(f+5+16+1,4,4);
+    gsl_matrix_const_view I_vals = gsl_matrix_const_view_array(y+5+16+1,4,4);
+    IRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &I_eqs.matrix, params);
 
-  /* Equation for eta */
-  gsl_matrix_view eta_eqs = gsl_matrix_view_array(f+5+16+1+16,4,4);
-  gsl_matrix_const_view eta_vals = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
-  etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &eta_vals.matrix, &eta_eqs.matrix, params);
+    /* Equation for eta */
+    gsl_matrix_view eta_eqs = gsl_matrix_view_array(f+5+16+1+16,4,4);
+    gsl_matrix_const_view eta_vals = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
+    etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &eta_vals.matrix, &eta_eqs.matrix, params);
 
-  /* Equation for dI */
-  gsl_vector_view dI_eqs_view = gsl_vector_view_array(f+5+16+1+16+16,4*4*4);
-  gsl_vector_const_view dI_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16,4*4*4);
-  gsl_vector * dI_eqs = &dI_eqs_view.vector;
-  const gsl_vector * dI_vals = &dI_vals_view.vector;
+    /* Equation for dI */
+    gsl_vector_view dI_eqs_view = gsl_vector_view_array(f+5+16+1+16+16,4*4*4);
+    gsl_vector_const_view dI_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16,4*4*4);
+    gsl_vector * dI_eqs = &dI_eqs_view.vector;
+    const gsl_vector * dI_vals = &dI_vals_view.vector;
 
-  dIinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
+    dIinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &I_vals.matrix, &q_vals.matrix, dI_vals, dI_eqs, params);
 
-  /* Equation for dxi */
-  gsl_vector_view dxi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64,4*4*4);
-  gsl_vector_const_view dxi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64,4*4*4);
-  gsl_vector * dxi_eqs = &dxi_eqs_view.vector;
-  const gsl_vector * dxi_vals = &dxi_vals_view.vector;
+    /* Equation for dxi */
+    gsl_vector_view dxi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64,4*4*4);
+    gsl_vector_const_view dxi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64,4*4*4);
+    gsl_vector * dxi_eqs = &dxi_eqs_view.vector;
+    const gsl_vector * dxi_vals = &dxi_vals_view.vector;
 
-  dxiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, dxi_eqs, params);
+    dxiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, dxi_eqs, params);
 
-  /* Equation for deta */
-  gsl_vector_view deta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64,4*4*4);
-  gsl_vector_const_view deta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64,4*4*4);
-  gsl_vector * deta_eqs = &deta_eqs_view.vector;
-  const gsl_vector * deta_vals = &deta_vals_view.vector;
+    /* Equation for deta */
+    gsl_vector_view deta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64,4*4*4);
+    gsl_vector_const_view deta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64,4*4*4);
+    gsl_vector * deta_eqs = &deta_eqs_view.vector;
+    const gsl_vector * deta_vals = &deta_vals_view.vector;
 
-  detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
+    detaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &eta_vals.matrix, deta_vals, deta_eqs, params);
 
-  /* Equation for d2Iinv */
-  gsl_vector_view d2Iinv_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64,4*4*4*4);
-  gsl_vector_const_view d2Iinv_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64,4*4*4*4);
-  gsl_vector * d2Iinv_eqs = &d2Iinv_eqs_view.vector;
-  const gsl_vector * d2Iinv_vals = &d2Iinv_vals_view.vector;
+    /* Equation for d2Iinv */
+    gsl_vector_view d2Iinv_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64,4*4*4*4);
+    gsl_vector_const_view d2Iinv_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64,4*4*4*4);
+    gsl_vector * d2Iinv_eqs = &d2Iinv_eqs_view.vector;
+    const gsl_vector * d2Iinv_vals = &d2Iinv_vals_view.vector;
 
-  d2IinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2Iinv_vals, d2Iinv_eqs, params);
+    d2IinvRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2Iinv_vals, d2Iinv_eqs, params);
 
-  /* Equation for d2xi */
-  gsl_vector_view d2xi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256,4*4*4*4);
-  gsl_vector_const_view d2xi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256,4*4*4*4);
-  gsl_vector * d2xi_eqs = &d2xi_eqs_view.vector;
-  const gsl_vector * d2xi_vals = &d2xi_vals_view.vector;
+    /* Equation for d2xi */
+    gsl_vector_view d2xi_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256,4*4*4*4);
+    gsl_vector_const_view d2xi_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256,4*4*4*4);
+    gsl_vector * d2xi_eqs = &d2xi_eqs_view.vector;
+    const gsl_vector * d2xi_vals = &d2xi_vals_view.vector;
 
-  d2xiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2xi_vals, d2xi_eqs, params);
+    d2xiRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, dxi_vals, &I_vals.matrix, dI_vals, d2xi_vals, d2xi_eqs, params);
 
-  /* Equation for d2eta */
-  gsl_vector_view d2eta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
-  gsl_vector_const_view d2eta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
-  gsl_vector * d2eta_eqs = &d2eta_eqs_view.vector;
-  const gsl_vector * d2eta_vals = &d2eta_vals_view.vector;
+    /* Equation for d2eta */
+    gsl_vector_view d2eta_eqs_view = gsl_vector_view_array(f+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
+    gsl_vector_const_view d2eta_vals_view = gsl_vector_const_view_array(y+5+16+1+16+16+64+64+64+256+256,4*4*4*4);
+    gsl_vector * d2eta_eqs = &d2eta_eqs_view.vector;
+    const gsl_vector * d2eta_vals = &d2eta_vals_view.vector;
 
-  d2etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, d2eta_vals, d2eta_eqs, params);
+    d2etaRHS(tau, &geodesic_coords.vector, &geodesic_eqs.vector, &eta_vals.matrix, &q_vals.matrix, dxi_vals, d2xi_vals, deta_vals, d2eta_vals, d2eta_eqs, params);
 
-  /* Calculate Box SqrtDelta */
-  double box_sqrt_delta = 0;
-  boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+    /* Calculate Box SqrtDelta */
+    double box_sqrt_delta = 0;
+    boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
-  /* Calculate V0 */
-  V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
+    /* Calculate V0 */
+    V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
 
-  return GSL_SUCCESS;
+    return GSL_SUCCESS;
 }
 
 int main (void)
 {
-  int i;
+    int i;
 
-  /* Use a Runge-Kutta integrator with adaptive step-size */
-  const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
-  gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
-  gsl_odeiv_control * c = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
-  gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
+    /* Use a Runge-Kutta integrator with adaptive step-size */
+    const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
+    gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
+    gsl_odeiv_control * c = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
+    gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
 
 #ifdef NARIAI
-  double tau = 0.0, tau1 = 1000.0;
-  double h = 1e-6;
-  double r0 = 0.5;
-  double m = 1.0;
-  double xi=0;
-  double rp0 = -sqrt(3./16.);
+    double tau = 0.0, tau1 = 1000.0;
+    double h = 1e-6;
+    double r0 = 0.5;
+    double m = 1.0;
+    double xi=0;
+    double rp0 = -sqrt(3./16.);
 
-  /* Time-like geodesic starting at r=10M and going in to r=4M */
-  struct geodesic_params params = {m, sqrt(15./16.), 1., 0.};
+    /* Time-like geodesic starting at r=10M and going in to r=4M */
+    struct geodesic_params params = {m, sqrt(15./16.), 1., 0.};
 #else
-  double tau = 0.0, tau1 = 1000.0;
-  double h = 1e-6;
-  double r0 = 10.0;
-  double m = 1.0;
-  double xi=0;
-  double rp0 = -0.706400680146914355432568986948418;
+    double tau = 0.0, tau1 = 1000.0;
+    double h = 1e-6;
+    double r0 = 10.0;
+    double m = 1.0;
+    double xi=0;
+    double rp0 = -0.706400680146914355432568986948418;
 
-  /* Time-like geodesic starting at r=10M and going in to r=4M */
-  struct geodesic_params params = {m, 4.0/5.0, 4.198185308677679, 0.};
+    /* Time-like geodesic starting at r=10M and going in to r=4M */
+    struct geodesic_params params = {m, 4.0/5.0, 4.198185308677679, 0.};
 #endif
 
-  gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
+    gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
-  /* Initial Conditions */
-  double y[NUM_EQS] = {
-    /* r, r', theta, phi, t */
-    r0, rp0, M_PI_2, 0.0, 0.0,
+    /* Initial Conditions */
+    double y[NUM_EQS] = {
+        /* r, r', theta, phi, t */
+        r0, rp0, M_PI_2, 0.0, 0.0,
 
-    /* Q^a'_b' */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* Q^a'_b' */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* Delta^1/2 */
-    1.0,
+        /* Delta^1/2 */
+        1.0,
 
-    /* I_a'^b */
-    1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        /* I_a'^b */
+        1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
 
-    /* eta^a_b' */
-    -1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0,
+        /* eta^a_b' */
+        -1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0,
 
-   /* dI */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* dI */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* dxi */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* dxi */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* deta */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* deta */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* d2I - this will get filled in later */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* d2I - this will get filled in later */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* d2xi - this will get filled in later*/
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* d2xi - this will get filled in later*/
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* d2eta - this will get filled in later */
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        /* d2eta - this will get filled in later */
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 
-    /* V_0 */
-    RicciScalar() * (xi-1./6.)/2.
-  };
+        /* V_0 */
+        RicciScalar() * (xi-1./6.)/2.
+    };
 
-  d2IinvInit(y+5+16+1+16+16+64+64+64, r0, &params);
-  d2xiInit(y+5+16+1+16+16+64+64+64+256, r0, &params);
-  d2etaInit(y+5+16+1+16+16+64+64+64+256+256, r0, &params);
-
-  /* Gamma is the matrix inverse of eta */
-  int signum;
-  gsl_permutation * p = gsl_permutation_alloc (4);
-  gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
-  gsl_matrix * gamma = gsl_matrix_calloc(4,4);
-  gsl_matrix * lu = gsl_matrix_calloc(4,4);
-  gsl_matrix_memcpy(lu, &eta.matrix);
-  gsl_linalg_LU_decomp (lu, p, &signum);
-  gsl_linalg_LU_invert (lu, p, gamma);
-
-  /* Calculate Box SqrtDelta */
-  double box_sqrt_delta = 0;
-  boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
-
-  /* Calculate tr2 term */
-  double tr2 = 0;
-  tr2term (tau, y, &tr2, &params);
-
-  /* Output the initial values */
-  printf ("%.5e", tau);
-  for(i=0; i<NUM_EQS; i++)
-  {
-      printf (", %.5e", y[i]);
-  }
-  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
-  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-  printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-  printf(", %.5e", box_sqrt_delta);
-  printf(", %.5e", y[NUM_EQS-1]);
-  printf(", %.5e", tr2);
-  printf("\n");
-
-  /* Solve system of ODEs */
-  while (tau < tau1)
-  {
-    int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
-    if (status != GSL_SUCCESS)
-      break;
+    d2IinvInit(y+5+16+1+16+16+64+64+64, r0, &params);
+    d2xiInit(y+5+16+1+16+16+64+64+64+256, r0, &params);
+    d2etaInit(y+5+16+1+16+16+64+64+64+256+256, r0, &params);
 
     /* Gamma is the matrix inverse of eta */
+    int signum;
+    gsl_permutation * p = gsl_permutation_alloc (4);
+    gsl_matrix_const_view eta = gsl_matrix_const_view_array(y+5+16+1+16,4,4);
+    gsl_matrix * gamma = gsl_matrix_calloc(4,4);
+    gsl_matrix * lu = gsl_matrix_calloc(4,4);
     gsl_matrix_memcpy(lu, &eta.matrix);
     gsl_linalg_LU_decomp (lu, p, &signum);
     gsl_linalg_LU_invert (lu, p, gamma);
 
     /* Calculate Box SqrtDelta */
+    double box_sqrt_delta = 0;
     boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
     /* Calculate tr2 term */
+    double tr2 = 0;
     tr2term (tau, y, &tr2, &params);
 
-    /* Output the results */
+    /* Output the initial values */
     printf ("%.5e", tau);
     for(i=0; i<NUM_EQS; i++)
     {
-      printf (", %.5e", y[i]);
+        printf (", %.5e", y[i]);
     }
     printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
     printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
@@ -313,31 +280,64 @@ int main (void)
     printf(", %.5e", box_sqrt_delta);
     printf(", %.5e", y[NUM_EQS-1]);
     printf(", %.5e", tr2);
-    //printf(", %.5e", gsl_linalg_LU_det(lu, signum));
     printf("\n");
 
-    /* Don't let the step size get bigger than 1 */
-    /*if (h > .10)
+    /* Solve system of ODEs */
+    while (tau < tau1)
     {
-      fprintf(stderr,"Warning: step size %e greater than 1 is not allowed. Using step size of 1.0.\n",h);
-      h=.10;
-    }*/
+        int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
+        if (status != GSL_SUCCESS)
+            break;
 
-    /* Exit if step size get smaller than 10^-12 */
-    if (h < 1e-20 || tau > 3.0)
-    {
-      fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
-      break;
+        /* Gamma is the matrix inverse of eta */
+        gsl_matrix_memcpy(lu, &eta.matrix);
+        gsl_linalg_LU_decomp (lu, p, &signum);
+        gsl_linalg_LU_invert (lu, p, gamma);
+
+        /* Calculate Box SqrtDelta */
+        boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+
+        /* Calculate tr2 term */
+        tr2term (tau, y, &tr2, &params);
+
+        /* Output the results */
+        printf ("%.5e", tau);
+        for(i=0; i<NUM_EQS; i++)
+        {
+            printf (", %.5e", y[i]);
+        }
+        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
+        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
+        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
+        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
+        printf(", %.5e", box_sqrt_delta);
+        printf(", %.5e", y[NUM_EQS-1]);
+        printf(", %.5e", tr2);
+        //printf(", %.5e", gsl_linalg_LU_det(lu, signum));
+        printf("\n");
+
+        /* Don't let the step size get bigger than 1 */
+        /*if (h > .10)
+        {
+          fprintf(stderr,"Warning: step size %e greater than 1 is not allowed. Using step size of 1.0.\n",h);
+          h=.10;
+        }*/
+
+        /* Exit if step size get smaller than 10^-12 */
+        if (h < 1e-20 || tau > 23.0)
+        {
+            fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
+            break;
+        }
     }
-  }
 
-  gsl_permutation_free(p);
-  gsl_matrix_free(gamma);
-  gsl_matrix_free(lu);
+    gsl_permutation_free(p);
+    gsl_matrix_free(gamma);
+    gsl_matrix_free(lu);
 
-  gsl_odeiv_evolve_free (e);
-  gsl_odeiv_control_free (c);
-  gsl_odeiv_step_free (s);
+    gsl_odeiv_evolve_free (e);
+    gsl_odeiv_control_free (c);
+    gsl_odeiv_step_free (s);
 
-  return 0;
+    return 0;
 }

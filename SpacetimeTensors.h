@@ -1,7 +1,7 @@
 /* For any spacetime, we need to specify the tensors in this file.
  *
  * Copyright (C) 2009 Barry Wardell
- *  
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -17,10 +17,10 @@
 #define R(A,B,C,D)  R[64*A+16*B+4*C+D]
 
 struct geodesic_params {
-  double m; /* Black Hole Mass */
-  double e; /* "Energy" constant of motion */
-  double l; /* "Angular momentum" constant of motion */
-  int type; /* Type of geodesic. 0=null, -1=time-like */
+    double m; /* Black Hole Mass */
+    double e; /* "Energy" constant of motion */
+    double l; /* "Angular momentum" constant of motion */
+    int type; /* Type of geodesic. 0=null, -1=time-like */
 };
 
 /* The contravariant metric components */
