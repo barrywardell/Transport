@@ -104,7 +104,7 @@ int func (double tau, const double y[], double f[], void *params)
     boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
 
     /* Calculate V0 */
-    V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
+    V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, y+5+16, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
 
     return GSL_SUCCESS;
 }
@@ -114,39 +114,47 @@ int main (void)
     int i;
 
     /* Use a Runge-Kutta integrator with adaptive step-size */
-    const gsl_odeiv_step_type * T = gsl_odeiv_step_rkf45;
-    gsl_odeiv_step * s = gsl_odeiv_step_alloc (T, NUM_EQS);
-    gsl_odeiv_control * c = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
-    gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (NUM_EQS);
+    const gsl_odeiv_step_type * step_type = gsl_odeiv_step_rkf45;
+    gsl_odeiv_step * step = gsl_odeiv_step_alloc (step_type, NUM_EQS);
+    gsl_odeiv_control * control = gsl_odeiv_control_standard_new (1e-20, 1e-12, 1.0, 1.0);
+    gsl_odeiv_evolve * evolve = gsl_odeiv_evolve_alloc (NUM_EQS);
+
+    /* Start at tau=0 and integrate to tau=1000 */
+    double tau = 0.0, tau1 = 1000.0;
+
+    /* Initial timestep - the adaptive stepsize algorithm will change this */
+    double h = 1e-6;
 
 #ifdef NARIAI
-    double tau = 0.0, tau1 = 1000.0;
-    double h = 1e-6;
-    double r0 = 0.5;
-    double m = 1.0;
-    double xi=0;
-    double rp0 = -sqrt(3./16.);
-
-    /* Time-like geodesic starting at r=10M and going in to r=4M */
-    struct geodesic_params params = {m, sqrt(15./16.), 1., 0.};
-#else
-    double tau = 0.0, tau1 = 1000.0;
-    double h = 1e-6;
+    /* Null geodesic starting at r0=0.5, moving radially inward to r=0.25 and
+       returning to r0=0.5 after travelling through an angle 2*pi */
+    double r0   = 0.5;
+    double r_deriv_0  = -sqrt(3./16.);
+    double m    = 1.0;
+    double e    = sqrt(15./16.);
+    double l    = 1.0;
+    int type = 0;
+    double xi   = 0;
+#elif defined(SCHWARZSCHILD)
+    /* Null geodesic starting at r0=10, moving radially inward and
+       returning to r10 after travelling through an angle 2*pi */
     double r0 = 10.0;
+    double r_deriv_0 = -0.706400680146914355432568986948418;
     double m = 1.0;
+    double e = 4.0/5.0;
+    double l = 4.198185308677679;
+    int type = 0;
     double xi=0;
-    double rp0 = -0.706400680146914355432568986948418;
-
-    /* Time-like geodesic starting at r=10M and going in to r=4M */
-    struct geodesic_params params = {m, 4.0/5.0, 4.198185308677679, 0.};
 #endif
+
+    struct geodesic_params params = {m, e, l, type, xi};
 
     gsl_odeiv_system sys = {func, NULL, NUM_EQS, &params};
 
     /* Initial Conditions */
     double y[NUM_EQS] = {
         /* r, r', theta, phi, t */
-        r0, rp0, M_PI_2, 0.0, 0.0,
+        r0, r_deriv_0, M_PI_2, 0.0, 0.0,
 
         /* Q^a'_b' */
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -285,7 +293,7 @@ int main (void)
     /* Solve system of ODEs */
     while (tau < tau1)
     {
-        int status = gsl_odeiv_evolve_apply (e, c, s, &sys, &tau, tau1, &h, y);
+        int status = gsl_odeiv_evolve_apply (evolve, control, step, &sys, &tau, tau1, &h, y);
         if (status != GSL_SUCCESS)
             break;
 
@@ -313,20 +321,12 @@ int main (void)
         printf(", %.5e", box_sqrt_delta);
         printf(", %.5e", y[NUM_EQS-1]);
         printf(", %.5e", tr2);
-        //printf(", %.5e", gsl_linalg_LU_det(lu, signum));
         printf("\n");
 
-        /* Don't let the step size get bigger than 1 */
-        /*if (h > .10)
-        {
-          fprintf(stderr,"Warning: step size %e greater than 1 is not allowed. Using step size of 1.0.\n",h);
-          h=.10;
-        }*/
-
         /* Exit if step size get smaller than 10^-12 */
-        if (h < 1e-20 || tau > 23.0)
+        if (h < 1e-12)
         {
-            fprintf(stderr,"Error: step size %e less than 1e-8 is not allowed.\n",h);
+            fprintf(stderr,"Error: step size %e less than 1e-12 is not allowed.\n",h);
             break;
         }
     }
@@ -335,9 +335,9 @@ int main (void)
     gsl_matrix_free(gamma);
     gsl_matrix_free(lu);
 
-    gsl_odeiv_evolve_free (e);
-    gsl_odeiv_control_free (c);
-    gsl_odeiv_step_free (s);
+    gsl_odeiv_evolve_free (evolve);
+    gsl_odeiv_control_free (control);
+    gsl_odeiv_step_free (step);
 
     return 0;
 }

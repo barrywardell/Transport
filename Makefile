@@ -22,7 +22,7 @@ V0Nariai: V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
 	$(CC) -D NARIAI $(CFLAGS) $(LDFLAGS) -o $@ V0.c NariaiTensors.c VanVleckEquations.c V0Equations.c
 
 V0Schw: V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
+	$(CC) -D SCHWARZSCHILD $(CFLAGS) $(LDFLAGS) -o $@ V0.c SchwTensors.c VanVleckEquations.c V0Equations.c
 
 SchwGeodesics: SchwGeodesicEqns.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ SchwGeodesicEqns.c

@@ -20,7 +20,6 @@
 /* The contravariant metric components for Nariai (with theta=Pi/2) */
 int metric_up_up(const double *y, gsl_matrix *metric, void *params)
 {
-    (void)params;
     double r = y[0];
 
     gsl_matrix_set_zero(metric);
@@ -36,7 +35,6 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
 /* The covariant metric components for Nariai (with theta=Pi/2) */
 int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
 {
-    (void)params;
     double r = y[0];
 
     gsl_matrix_set_zero(metric);
@@ -54,7 +52,6 @@ int metric_dn_dn(const double *y, gsl_matrix *metric, void *params)
  */
 int S (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *s, void *params)
 {
-    (void)params;
     double ur = gsl_vector_get(yp,0);
     double uph = gsl_vector_get(yp,3);
     double ut = gsl_vector_get(yp,4);
@@ -82,8 +79,6 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
     double ut = gsl_vector_get(yp,4);
     double r = gsl_vector_get(y,0);
 
-    (void)params;
-
     /* Initialize all elements to 0 */
     gsl_vector_set_zero(r_sigma);
 
@@ -106,8 +101,6 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
     double ut = gsl_vector_get(yp,4);
     double r = gsl_vector_get(y,0);
 
-    (void)params;
-
     /* Initialize all elements to 0 */
     gsl_vector_set_zero(r_sigma);
 
@@ -124,8 +117,6 @@ int R_sigma_alt (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sig
    set theta=Pi/2 and uth=0. */
 int dR_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma2, void *params)
 {
-    (void)params;
-
     /* Initialize all elements to 0 */
     gsl_vector_set_zero(dr_sigma2);
 
@@ -136,8 +127,6 @@ int dR_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigm
    set theta=Pi/2 and uth=0. */
 int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma, void *params)
 {
-    (void)params;
-
     /* Initialize all elements to 0 */
     gsl_vector_set_zero(dr_sigma);
 
@@ -149,8 +138,6 @@ int dR_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * dr_sigma
    set theta=Pi/2 and uth=0. */
 int d2R_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_sigma2, void *params)
 {
-    (void)params;
-
     /* Initialize all elements to 0 */
     gsl_vector_set_zero(d2r_sigma2);
 
@@ -160,7 +147,6 @@ int d2R_sigma2 (const gsl_vector * y, const gsl_vector * yp, gsl_vector * d2r_si
 /* Calculates the matrix Gu^a_b = \Gamma^a_{b c} u^c and fill the values into gu */
 int Gu (const gsl_vector * y, const gsl_vector * yp, gsl_matrix *gu, void *params)
 {
-    (void)params;
     double ur = gsl_vector_get(yp,0);
     double ut = gsl_vector_get(yp,4);
     double r = gsl_vector_get(y,0);

@@ -808,10 +808,12 @@ int tr2term (double tau, const double * y, double * f, void * params)
 }
 
 /* V0: D'V_0 = -V0 - 1/2 V_0 ( xi - 4 ) - 1/2 Box (Delta^1/2) */
-int V0RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * q, const double * dal_sqrt_delta, const double * v0, double * f, void * params)
+int V0RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * q, const double * sqrt_delta, const double * dal_sqrt_delta, const double * v0, double * f, void * params)
 {
     int i;
     double rhs = 0.;
+    struct geodesic_params p = *(struct geodesic_params *)params;
+
 
     if(tau!=0.)
     {
@@ -820,13 +822,13 @@ int V0RHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_ma
             rhs -= gsl_matrix_get(q, i, i);
         }
 
-        rhs = (rhs*(*v0)/2. - (*v0) - (*dal_sqrt_delta)/2.)/(tau);
+        rhs = (rhs*(*v0)/2. - (*v0) - (*dal_sqrt_delta - (p.xi*(*sqrt_delta)*RicciScalar()) )/2.)/(tau);
 
         *f = rhs;
     } else {
         rhs = d_RicciScalar(y, yp, params);
         /* FIXME: xi missing */
-        *f = rhs*(-1.0/6.0)/4.0;
+        *f = rhs*( p.xi - 1.0/6.0 )/4.0;
     }
 
     return GSL_SUCCESS;

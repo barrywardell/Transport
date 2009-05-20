@@ -21,6 +21,7 @@ struct geodesic_params {
     double e; /* "Energy" constant of motion */
     double l; /* "Angular momentum" constant of motion */
     int type; /* Type of geodesic. 0=null, -1=time-like */
+    double xi;/* Coupling to scalar background curvature */
 };
 
 /* The contravariant metric components */
