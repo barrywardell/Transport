@@ -223,6 +223,7 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
                                    + gsl_matrix_get(gu, l, k)*gsl_vector_get(dxi, 16*i + 4*j + l));
 
     gsl_vector_free(sigma_R);
+    gsl_vector_free(sigma2_dR);
     gsl_matrix_free(xi);
     gsl_matrix_free(gu);
 
@@ -279,6 +280,8 @@ int detaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                    - (gsl_vector_get(sigma_R, 16*i + 4*j + k) +
                                       gsl_vector_get(sigma_R, 16*i + 4*k + j))/6.0
                                    );
+
+        gsl_vector_free(sigma_R_alt);
     }
 
     /* Now, calculate the sigma_R * eta term */
@@ -392,6 +395,10 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
     }
 
     gsl_vector_free(sigma_R);
+    gsl_vector_free(sigma_dR);
+    gsl_permutation_free(p);
+    gsl_matrix_free(lu);
+    gsl_matrix_free(Iinv);
     gsl_matrix_free(xi);
     gsl_matrix_free(gu);
 
@@ -516,6 +523,9 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                        );
 
     gsl_vector_free(sigma_R);
+    gsl_vector_free(sigma_R_alt);
+    gsl_vector_free(sigma2_d2R);
+    gsl_vector_free(sigma_dR);
     gsl_matrix_free(xi);
     gsl_matrix_free(gu);
 
@@ -612,6 +622,7 @@ int d2etaRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl
                                        );
 
     gsl_vector_free(sigma_R);
+    gsl_vector_free(sigma_dR);
     gsl_matrix_free(xi);
     gsl_matrix_free(gu);
 
@@ -849,6 +860,8 @@ int d2IinvInit(double * d2Iinv, double r0, void * params)
             for(k=0; k<4; k++)
                 for(l=0; l<4; l++)
                     d2Iinv[64*i+16*j+4*k+l] = -gsl_vector_get(R, 64*j + 16*i + 4*k + l)/2.;
+
+    gsl_vector_free(R);
 
     return GSL_SUCCESS;
 }
