@@ -109,7 +109,7 @@ int func (double tau, const double y[], double f[], void *params)
     return GSL_SUCCESS;
 }
 
-int main (void)
+int main (int argc, char * argv[])
 {
     int i;
 
@@ -120,32 +120,19 @@ int main (void)
     gsl_odeiv_evolve * evolve = gsl_odeiv_evolve_alloc (NUM_EQS);
 
     /* Start at tau=0 and integrate to tau=1000 */
-    double tau = 0.0, tau1 = 1000.0;
+    double tau = 0.0;
 
     /* Initial timestep - the adaptive stepsize algorithm will change this */
     double h = 1e-6;
 
-#ifdef NARIAI
-    /* Null geodesic starting at r0=0.5, moving radially inward to r=0.25 and
-       returning to r0=0.5 after travelling through an angle 2*pi */
-    double r0   = 0.5;
-    double r_deriv_0  = -sqrt(3./16.);
-    double m    = 1.0;
-    double e    = sqrt(15./16.);
-    double l    = 1.0;
-    int type = 0;
-    double xi   = 0;
-#elif defined(SCHWARZSCHILD)
-    /* Null geodesic starting at r0=10, moving radially inward and
-       returning to r10 after travelling through an angle 2*pi */
-    double r0 = 10.0;
-    double r_deriv_0 = -0.706400680146914355432568986948418;
-    double m = 1.0;
-    double e = 4.0/5.0;
-    double l = 4.198185308677679;
-    int type = 0;
-    double xi=0;
-#endif
+    double tau1     = atof(argv[1]);
+    double r0       = atof(argv[2]);
+    double r_deriv_0= atof(argv[3]);
+    double m        = atof(argv[4]);
+    double e        = atof(argv[5]);
+    double l        = atof(argv[6]);
+    int type        = atof(argv[7]);
+    double xi       = atof(argv[8]);
 
     struct geodesic_params params = {m, e, l, type, xi};
 
@@ -327,6 +314,12 @@ int main (void)
         if (h < 1e-20)
         {
             fprintf(stderr,"Error: step size %e less than 1e-20 is not allowed.\n",h);
+            break;
+        }
+
+        if (y[3] > 3.14)
+        {
+            fprintf(stderr, "Reached pi.\n");
             break;
         }
     }
