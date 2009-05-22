@@ -120,7 +120,7 @@ int main (int argc, char * argv[])
     gsl_odeiv_evolve * evolve = gsl_odeiv_evolve_alloc (NUM_EQS);
 
     /* Start at tau=0 and integrate to tau=1000 */
-    double tau = 0.0;
+    double tau = 0.0, tausave=0.0;
 
     /* Initial timestep - the adaptive stepsize algorithm will change this */
     double h = 1e-6;
@@ -294,7 +294,8 @@ int main (int argc, char * argv[])
 
         /* Calculate tr2 term */
         tr2term (tau, y, &tr2, &params);
-
+        if((tau-tausave)>0.01)
+        {
         /* Output the results */
         printf ("%.5e", tau);
         for(i=0; i<NUM_EQS; i++)
@@ -309,19 +310,35 @@ int main (int argc, char * argv[])
         printf(", %.5e", y[NUM_EQS-1]);
         printf(", %.5e", tr2);
         printf("\n");
-
+        tausave = tau;
+        }
         /* Exit if step size get smaller than 10^-20 */
-        if (h < 1e-20)
+        if (h < 1e-22)
         {
-            fprintf(stderr,"Error: step size %e less than 1e-20 is not allowed.\n",h);
+            fprintf(stderr,"Error: step size %e less than 1e-22 is not allowed.\n",h);
             break;
         }
 
-        if (y[3] > 3.14)
+        if ((y[3] > 3.14) || (y[3] < -3.14))
         {
             fprintf(stderr, "Reached pi.\n");
             break;
         }
+
+#if defined(SCHWARZSCHILD)
+        if ((y[0] < 2.01))
+        {
+            fprintf(stderr, "Horizon reached.\n");
+            break;
+        }
+#elif defined(NARIAI)
+        if ((y[0] > 0.99) || (y[0] < -0.99))
+        {
+            fprintf(stderr, "Reached r=%0.2f.\n", y[0]);
+            break;
+        }
+#endif
+
     }
 
     gsl_permutation_free(p);
