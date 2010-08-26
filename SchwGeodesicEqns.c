@@ -88,12 +88,12 @@ int main (int argc, const char* argv[])
     gsl_odeiv_control * c = gsl_odeiv_control_y_new (1e-8, 1e-8);
     gsl_odeiv_evolve * e = gsl_odeiv_evolve_alloc (5);
 
-    struct geodesic_params params = {1,0.950382,3.59211,-1};
+    struct geodesic_params params = {1,0.964901,3.71391,-1};
     gsl_odeiv_system sys = {func, jac, 5, &params};
 
-    double tau = 0.0, tau1 = 1000.0;
+    double tau = 0.0, tau1 = 10000.0;
     double h = 1e-6;
-    double y[5] = { 10.0, 0.0, 0.0, 0.0, 0.0 };
+    double y[5] = { 20.0, 0.0, 0.0, 0.0, 0.0 };
 
     while (tau < tau1)
     {

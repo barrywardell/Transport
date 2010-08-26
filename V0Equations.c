@@ -25,7 +25,7 @@
 #include "SpacetimeTensors.h"
 
 /* Bivector of parallel displacement, g_{a'}^{~ a}. We use the defining equation
-   g_{a' ~ ;b'}^{a} \sigma^{b'} = 0 */
+   \sigma^{b'} g_{a'}{}^{a}{}_{;b'} = 0 */
 int IRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_matrix * I, gsl_matrix * f, void * params)
 {
     /* Gamma*u */

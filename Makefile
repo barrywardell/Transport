@@ -1,5 +1,7 @@
-CFLAGS=-Wall -g -I/opt/local/include
-LDFLAGS=-L/usr/local/atlas/lib -L/opt/local/lib -lgsl -lcblas -latlas -lm
+#CFLAGS=-Wall -g -I/opt/local/include
+#LDFLAGS=-L/usr/local/atlas/lib -L/opt/local/lib 
+CFLAGS=-Wall -g
+LDFLAGS=-L/opt/local/lib -lgsl -lcblas -latlas -lm
 CC = gcc
 
 .PHONY: all V0 VanVleck Geodesics
