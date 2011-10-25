@@ -101,7 +101,7 @@ int func (double tau, const double y[], double f[], void *params)
 
     /* Calculate Box SqrtDelta */
     double box_sqrt_delta = 0;
-    boxSqrtDelta (tau, y, &box_sqrt_delta, &params);
+    boxSqrtDelta (tau, y, &box_sqrt_delta, params);
 
     /* Calculate V0 */
     V0RHS (tau, &geodesic_coords.vector, &geodesic_eqs.vector, &q_vals.matrix, y+5+16, &box_sqrt_delta, y+5+16+1+16+16+64+64+64+256+256+256, f+5+16+1+16+16+64+64+64+256+256+256, params);
