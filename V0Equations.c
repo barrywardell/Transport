@@ -361,7 +361,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                                        /* gu * d2I */
                                        + gsl_vector_get(d2Iinv, 64*i+16*j+4*m+l) * gsl_matrix_get(gu, m, k)
                                        + gsl_vector_get(d2Iinv, 64*i+16*j+4*k+m) * gsl_matrix_get(gu, m, l)
-                                       - gsl_vector_get(d2Iinv, 64*m+16*j+4*k+l) * gsl_matrix_get(gu, i, m)
+                                       - gsl_vector_get(d2Iinv, 64*i+16*m+4*k+l) * gsl_matrix_get(gu, j, m)
 
                                        /* R_sigma * dIinv */
                                        + gsl_vector_get(dIinv, 16*i+4*m+k)*gsl_vector_get(sigma_R, 16*j + 4*m + l)
@@ -369,7 +369,7 @@ int d2IinvRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gs
                                        - gsl_vector_get(dIinv, 16*i+4*j+m)*gsl_vector_get(sigma_R, 16*m + 4*k + l)
 
                                        /* dR_sigma * Iinv */
-                                       + gsl_matrix_get(Iinv, m, i)*gsl_vector_get(sigma_dR, 64*j + 16*m + 4*k + l)
+                                       + gsl_matrix_get(Iinv, i, m)*gsl_vector_get(sigma_dR, 64*j + 16*m + 4*k + l)
                                        );
 
     if(tau!=0.0)
