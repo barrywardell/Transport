@@ -206,8 +206,14 @@ int dxiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_m
                                    - gsl_matrix_get(xi, i, l)*gsl_vector_get(sigma_R, 16*l + 4*j + k)
                                    + gsl_matrix_get(xi, l, j)*gsl_vector_get(sigma_R, 16*i + 4*l + k)
                                    + gsl_matrix_get(xi, l, k)*gsl_vector_get(sigma_R, 16*i + 4*l + j)
-                                   - tau*gsl_matrix_get(xi, i, l)*gsl_vector_get(sigma2_dR, 16*l + 4*j + k)
                                    );
+
+    /* Now, calculate the sigma2_dR term */
+    for(i=0; i<4; i++)
+        for(j=0; j<4; j++)
+            for(k=0; k<4; k++)
+                gsl_vector_set(f, 16*i + 4*j + k, gsl_vector_get(f, 16*i + 4*j + k)
+                               - tau*gsl_vector_get(sigma2_dR, 16*i + 4*j + k));
 
     /* Christoffel terms */
     gsl_matrix * gu = gsl_matrix_calloc(4,4);
