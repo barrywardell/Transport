@@ -27,8 +27,8 @@ int metric_up_up(const double *y, gsl_matrix *metric, void *params)
     double r = y[0];
 
     gsl_matrix_set(metric,0,0,(r-2.0*m)/r);
-    gsl_matrix_set(metric,1,1,1/gsl_pow_2(r));
-    gsl_matrix_set(metric,2,2,1/gsl_pow_2(r));
+    gsl_matrix_set(metric,1,1,1./gsl_pow_2(r));
+    gsl_matrix_set(metric,2,2,1./gsl_pow_2(r));
     gsl_matrix_set(metric,3,3,-r/(r-2.0*m));
 
     return GSL_SUCCESS;
