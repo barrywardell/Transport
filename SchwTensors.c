@@ -99,24 +99,24 @@ int R_sigma (const gsl_vector * y, const gsl_vector * yp, gsl_vector * r_sigma, 
     gsl_vector_set_zero(r_sigma);
 
     /* Now, set the non-zero elements */
-    gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -m*ur/r);
-    gsl_vector_set(r_sigma, 16*0 + 4*0 + 2, m*uph/r);
-    gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -m*ur/r);
-    gsl_vector_set(r_sigma, 16*0 + 4*0 + 3, -(2.0*(-r+2.0*m))*m*ut/gsl_pow_4(r));
-    gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, (2.0*(-r+2.0*m))*m*ur/gsl_pow_4(r));
-    gsl_vector_set(r_sigma, 16*1 + 4*1 + 0, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
-    gsl_vector_set(r_sigma, 16*1 + 4*1 + 2, -2.0*m*uph/r);
-    gsl_vector_set(r_sigma, 16*1 + 4*1 + 3, (-r+2.0*m)*m*ut/gsl_pow_4(r));
-    gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m*uph/(gsl_pow_2(r)*(-r+2.0*m)));
-    gsl_vector_set(r_sigma, 16*2 + 4*2 + 0, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
-    gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, 2.0*m*uph/r);
-    gsl_vector_set(r_sigma, 16*2 + 4*2 + 3, (-r+2.0*m)*m*ut/gsl_pow_4(r));
-    gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, -(-r+2.0*m)*m*uph/gsl_pow_4(r));
-    gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -2.0*m*ut/(gsl_pow_2(r)*(-r+2.0*m)));
-    gsl_vector_set(r_sigma, 16*3 + 4*3 + 0, 2.0*m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
-    gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, -m*ut/r);
-    gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, -m*ut/r);
-    gsl_vector_set(r_sigma, 16*3 + 4*3 + 2, m*uph/r);
+    gsl_vector_set(r_sigma, 16*0 + 4*1 + 1, -m*ur/r);
+    gsl_vector_set(r_sigma, 16*0 + 4*2 + 0, m*uph/r);
+    gsl_vector_set(r_sigma, 16*0 + 4*2 + 2, -m*ur/r);
+    gsl_vector_set(r_sigma, 16*0 + 4*3 + 0, -(2.0*(-r+2.0*m))*m*ut/gsl_pow_4(r));
+    gsl_vector_set(r_sigma, 16*0 + 4*3 + 3, (2.0*(-r+2.0*m))*m*ur/gsl_pow_4(r));
+    gsl_vector_set(r_sigma, 16*1 + 4*0 + 1, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
+    gsl_vector_set(r_sigma, 16*1 + 4*2 + 1, -2.0*m*uph/r);
+    gsl_vector_set(r_sigma, 16*1 + 4*3 + 1, (-r+2.0*m)*m*ut/gsl_pow_4(r));
+    gsl_vector_set(r_sigma, 16*2 + 4*0 + 0, m*uph/(gsl_pow_2(r)*(-r+2.0*m)));
+    gsl_vector_set(r_sigma, 16*2 + 4*0 + 2, -m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
+    gsl_vector_set(r_sigma, 16*2 + 4*1 + 1, 2.0*m*uph/r);
+    gsl_vector_set(r_sigma, 16*2 + 4*3 + 2, (-r+2.0*m)*m*ut/gsl_pow_4(r));
+    gsl_vector_set(r_sigma, 16*2 + 4*3 + 3, -(-r+2.0*m)*m*uph/gsl_pow_4(r));
+    gsl_vector_set(r_sigma, 16*3 + 4*0 + 0, -2.0*m*ut/(gsl_pow_2(r)*(-r+2.0*m)));
+    gsl_vector_set(r_sigma, 16*3 + 4*0 + 3, 2.0*m*ur/(gsl_pow_2(r)*(-r+2.0*m)));
+    gsl_vector_set(r_sigma, 16*3 + 4*1 + 1, -m*ut/r);
+    gsl_vector_set(r_sigma, 16*3 + 4*2 + 2, -m*ut/r);
+    gsl_vector_set(r_sigma, 16*3 + 4*2 + 3, m*uph/r);
 
     return GSL_SUCCESS;
 }
