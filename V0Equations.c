@@ -438,7 +438,7 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
 
     /* Calculate sigma2_d2R */
     gsl_vector * sigma2_d2R = gsl_vector_calloc(4*4*4*4);
-    dR_sigma(y, yp, sigma2_d2R, params);
+    d2R_sigma2(y, yp, sigma2_d2R, params);
 
     /* Calculate sigma_dR */
     gsl_vector * sigma_dR = gsl_vector_calloc(4*4*4*4);
@@ -518,15 +518,25 @@ int d2xiRHS (double tau, const gsl_vector * y, const gsl_vector * yp, const gsl_
                                        + gsl_vector_get(dxi, 16*m+4*k+l)*gsl_vector_get(sigma_R, 16*i + 4*m + j)
                                        + gsl_vector_get(dxi, 16*m+4*j+k)*gsl_vector_get(sigma_R, 16*i + 4*m + l)
 
-                                       /* d2R_sigma */
-                                       - tau * gsl_vector_get(sigma2_d2R, 64*i + 16*j + 4*k + l)
-
                                        /* dR_sigma * xi */
                                        - gsl_matrix_get(xi, i, m)*gsl_vector_get(sigma_dR, 64*m + 16*j + 4*k + l)
                                        + gsl_matrix_get(xi, m, j)*gsl_vector_get(sigma_dR, 64*i + 16*m + 4*k + l)
                                        + gsl_matrix_get(xi, m, k)*gsl_vector_get(sigma_dR, 64*i + 16*m + 4*j + l)
                                        + gsl_matrix_get(xi, m, l)*gsl_vector_get(sigma_dR, 64*i + 16*m + 4*j + k)
                                        );
+
+
+    for(i=0; i<4; i++)
+        for(j=0; j<4; j++)
+            for(k=0; k<4; k++)
+                for(l=0; l<4; l++)
+                    gsl_vector_set(f, 64*i+16*j+4*k+l,
+                        gsl_vector_get(f, 64*i+16*j+4*k+l)
+
+                        /* d2R_sigma */
+                        - tau * gsl_vector_get(sigma2_d2R, 64*i + 16*j + 4*k + l)
+                        );
+
 
     gsl_vector_free(sigma_R);
     gsl_vector_free(sigma_R_alt);
