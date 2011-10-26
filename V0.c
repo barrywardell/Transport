@@ -266,15 +266,8 @@ int main (int argc, char * argv[])
     printf ("%.5e", tau);
     for(i=0; i<NUM_EQS; i++)
     {
-        printf (", %.5e", y[i]);
+        printf ("\t%.5e", y[i]);
     }
-    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
-    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-    printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-    printf(", %.5e", box_sqrt_delta);
-    printf(", %.5e", y[NUM_EQS-1]);
-    printf(", %.5e", tr2);
     printf("\n");
 
     /* Solve system of ODEs */
@@ -300,15 +293,8 @@ int main (int argc, char * argv[])
         printf ("%.5e", tau);
         for(i=0; i<NUM_EQS; i++)
         {
-            printf (", %.5e", y[i]);
+            printf ("\t%.5e", y[i]);
         }
-        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,0,0), gsl_matrix_get(gamma,0,1), gsl_matrix_get(gamma,0,2), gsl_matrix_get(gamma,0,3));
-        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,1,0), gsl_matrix_get(gamma,1,1), gsl_matrix_get(gamma,1,2), gsl_matrix_get(gamma,1,3));
-        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,2,0), gsl_matrix_get(gamma,2,1), gsl_matrix_get(gamma,2,2), gsl_matrix_get(gamma,2,3));
-        printf (", %.5e, %.5e, %.5e, %.5e", gsl_matrix_get(gamma,3,0), gsl_matrix_get(gamma,3,1), gsl_matrix_get(gamma,3,2), gsl_matrix_get(gamma,3,3));
-        printf(", %.5e", box_sqrt_delta);
-        printf(", %.5e", y[NUM_EQS-1]);
-        printf(", %.5e", tr2);
         printf("\n");
         tausave = tau;
         }
