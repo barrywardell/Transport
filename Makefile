@@ -1,6 +1,4 @@
-#CFLAGS=-Wall -g -I/opt/local/include
-#LDFLAGS=-L/usr/local/atlas/lib -L/opt/local/lib 
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -O3 -I/opt/local/include
 LDFLAGS=-L/opt/local/lib -lgsl -lcblas -latlas -lm
 CC = gcc
 
