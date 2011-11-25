@@ -72,7 +72,7 @@ int main (int argc, char * argv[])
 
     /* Initial Condidions */
     double y[NUM_EQS] = {
-        r0, 0.0, 0.0, 0.0, 0.0, /* r, r', theta, phi, t */
+        r0, 0.0, M_PI, 0.0, 0.0, /* r, r', theta, phi, t */
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, /* Q^a'_b' */
         1.0 /* Delta^1/2 */
     };
