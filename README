@@ -1,0 +1,52 @@
+Numerical code for integrating the transport equation for V0 along a geodesic
+-----------------------------------------------------------------------------
+
+===========
+Version 0.9
+===========
+
+The latest version of this code will always be available on the project
+website:
+
+http://www.barrywardell.net/Research/Code/Transport/
+
+Compiling
+---------
+This code requires the GNU Scientific Library 
+(http://www.gnu.org/software/gsl/). Make sure it is installed before 
+proceeding further.
+
+Compiling should be as simple as extracting the files to a folder and running
+'make'. This will then create four executables, for calculating the square root
+of the Van Vleck determinant and V0 in Schwarzschild and Nariai spacetimes.
+
+Usage
+-----
+The code requires the following command line parameters:
+
+tau1:		The affine time to integrate up to
+r0:		Initial radial location
+r_deriv_0:	Initial radial velocity
+m:		Black hole mass
+e:		'Energy' constant of the motion
+l:		'Angular momentum' constant of the motion
+type:		Type of geodesic - 0=null, -1=timelike, 1=spacelike
+xi:		Coupling to the scalar curvature.
+
+
+For example, for a circular geodesic at r=10M in Schwarzschild, this would be:
+
+./V0Schw 100.0 10.0 0.0 1.0 0.956183 3.77964 -1.0 0.0
+
+
+Changelog
+---------
+2 June 2009	Initial version released.
+
+License
+-------
+All code is licensed under the GNU GPL 2 license.
+
+Contact
+-------
+For any queries, please contact Barry Wardell <barry.wardell@gmail.com>.
